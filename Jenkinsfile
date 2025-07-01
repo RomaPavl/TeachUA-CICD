@@ -17,20 +17,24 @@ pipeline {
                 checkout scm
             }
         }
-/*
-       stage('Java Unit Tests') {
+        stage('Backend compile for sonar') {
             steps {
                 dir ('backend'){
-                     bat 'mvn test -Dcheckstyle.skip=true -Dtest=!VersionCreateTest'
+                     bat 'mvn clean compile'
                 }
             }
         }
-*/        
-        stage('React Unit Tests') {
+        stage('SonarQube Analysis') {
             steps {
-                dir('frontend') {
-                    bat 'npm install'
-                    bat 'npm run test -- src/App.test.js --watchAll=false --ci --verbose'
+                withSonarQubeEnv('MySonar') {
+                    bat 'sonar-scanner -Dsonar.projectKey=teach_ua -Dsonar.sources=backend,frontend -Dsonar.java.binaries=backend/target/classes ^ -Dsonar.exclusions=/node_modules/,/build/,/dist/'
+                }
+            }
+        }
+        stage('Java Unit Tests') {
+            steps {
+                dir ('backend'){
+                     bat 'mvn test -Dcheckstyle.skip=true -Dtest=!VersionCreateTest'
                 }
             }
         }
