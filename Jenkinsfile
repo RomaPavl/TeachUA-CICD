@@ -29,10 +29,8 @@ pipeline {
         stage('React Unit Tests') {
             steps {
                 dir('frontend') {
-                    bat '''
-                      npm install
-                      npm run test -- --watchAll=false --ci --verbose
-                    '''
+                    bat 'npm install`
+                    bat 'npm run test -- --watchAll=false --ci --verbose'
                 }
             }
         }
