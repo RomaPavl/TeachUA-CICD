@@ -28,14 +28,14 @@ pipeline {
        stage('Java Unit Tests') {
             steps {
                 dir ('backend'){
-                     sh 'mvn test -Dcheckstyle.skip=true'
+                     bat 'mvn test -Dcheckstyle.skip=true'
                 }
             }
         }
         stage('React Unit Tests') {
             steps {
                 dir('frontend') {
-                    sh '''
+                    bat '''
                       npm ci
                       npm run test -- --watchAll=false
                     '''
