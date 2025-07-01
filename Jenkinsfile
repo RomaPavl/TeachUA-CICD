@@ -28,7 +28,7 @@ pipeline {
             steps {
                 dir('frontend') {
                     bat '''
-                      npm ci
+                      npm install
                       npm run test -- --watchAll=false
                     '''
                 }
