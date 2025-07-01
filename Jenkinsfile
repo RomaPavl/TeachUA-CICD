@@ -27,7 +27,7 @@ pipeline {
         stage('SonarQube Analysis') {
             steps {
                 withSonarQubeEnv('MySonar') {
-                    bat 'sonar-scanner -Dsonar.projectKey=teach_ua -Dsonar.sources=backend,frontend -Dsonar.exclusions=**/node_modules/**,**/build/**,**/dist/**'
+                    bat 'sonar-scanner -Dsonar.projectKey=teach_ua -Dsonar.sources=backend,frontend -Dsonar.java.binaries=backend/target/classes ^ -Dsonar.exclusions=**/node_modules/**,**/build/**,**/dist/**'
                 }
             }
         }
