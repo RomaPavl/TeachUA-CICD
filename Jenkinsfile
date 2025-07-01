@@ -17,7 +17,6 @@ pipeline {
                 checkout scm
             }
         }
-/*
         stage('Backend compile for sonar') {
             steps {
                 dir ('backend'){
@@ -36,15 +35,6 @@ pipeline {
             steps {
                 dir ('backend'){
                      bat 'mvn test -Dcheckstyle.skip=true -Dtest=!VersionCreateTest'
-                }
-            }
-        }
-*/
-        stage('React Unit Tests') {
-            steps {
-                dir ('backend'){
-                     bat 'npm install'
-                     bat 'npm run test -- --watchAll=false --ci --verbose --passWithNoTests'
                 }
             }
         }
