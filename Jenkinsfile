@@ -17,11 +17,15 @@ pipeline {
                 checkout scm
             }
         }
-
+        stage('Compile backend for sonar') {
+            steps {
+                bat 'mvn clean compile'
+            }
+        }
         stage('SonarQube Analysis') {
             steps {
                 withSonarQubeEnv('MySonar') {
-                    bat 'sonar-scanner -Dsonar.projectKey=teach_ua -Dsonar.sources=backend,frontend'
+                    bat 'sonar-scanner -Dsonar.projectKey=teach_ua -Dsonar.sources=backend,frontend -Dsonar.exclusions=**/node_modules/**,**/build/**,**/dist/**'
                 }
             }
         }
