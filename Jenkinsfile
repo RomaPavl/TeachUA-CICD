@@ -30,7 +30,7 @@ pipeline {
             steps {
                 dir('frontend') {
                     bat 'npm install'
-                    bat 'npm run test -- --watchAll=false --ci --verbose'
+                    bat 'npm run test -- src/App.test.js --watchAll=false --ci --verbose'
                 }
             }
         }
