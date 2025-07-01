@@ -71,5 +71,5 @@ build/
 setenv.sh
 
 # Backup files
-*.sql
 *_backup_*
+teachua_dump.sql
