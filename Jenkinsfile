@@ -20,7 +20,7 @@ pipeline {
        stage('Java Unit Tests') {
             steps {
                 dir ('backend'){
-                     bat 'mvn test -Dspring.profiles.active=test -Dtest=!VersionCreateTest'
+                     bat 'mvn test -Dspring.profiles.active=test'
                 }
             }
         }
