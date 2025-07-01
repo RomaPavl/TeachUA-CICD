@@ -17,9 +17,11 @@ pipeline {
                 checkout scm
             }
         }
-        stage('Compile backend for sonar') {
+        stage('Backend compile for sonar') {
             steps {
-                bat 'mvn clean compile'
+                dir ('backend'){
+                     bat 'mvn clean compile'
+                }
             }
         }
         stage('SonarQube Analysis') {
