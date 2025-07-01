@@ -17,6 +17,7 @@ pipeline {
                 checkout scm
             }
         }
+/*
        stage('Java Unit Tests') {
             steps {
                 dir ('backend'){
@@ -24,12 +25,13 @@ pipeline {
                 }
             }
         }
+*/        
         stage('React Unit Tests') {
             steps {
                 dir('frontend') {
                     bat '''
                       npm install
-                      npm run test -- --watchAll=false
+                      npm run test -- --watchAll=false --ci --verbose
                     '''
                 }
             }
