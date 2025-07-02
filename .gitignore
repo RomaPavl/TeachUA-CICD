@@ -23,9 +23,6 @@ vault_pass.txt
 *.cfg~
 
 # Environment files
-.env
-.env.*
-*.env
 
 # Common temporary and backup files
 *.swp
