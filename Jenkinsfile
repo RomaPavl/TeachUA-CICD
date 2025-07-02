@@ -2,7 +2,7 @@ pipeline {
     agent any
 
     environment {
-        VERSION = "${env.BUILD_NUMBER} ?: 'dev'}"
+        VERSION = "${env.BUILD_NUMBER ?: 'dev'}"
         DOCKERHUB_CREDENTIALS = credentials('docker-creds')
         BACKEND_IMAGE = "${DOCKERHUB_CREDENTIALS_USR}/backend-teachua:${VERSION}"
         FRONTEND_IMAGE = "${DOCKERHUB_CREDENTIALS_USR}/frontend-teachua:${VERSION}"
