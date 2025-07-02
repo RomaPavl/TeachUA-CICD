@@ -63,6 +63,7 @@ pipeline {
                 bat "docker push ${BACKEND_IMAGE}"
             }
         }
+        
         stage('Push Frontend Image') {
             steps {
                 bat "docker push ${FRONTEND_IMAGE}"
