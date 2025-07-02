@@ -7,14 +7,12 @@ pipeline {
         BACKEND_IMAGE = "${DOCKERHUB_CREDENTIALS_USR}/backend-teachua:${VERSION}"
         FRONTEND_IMAGE = "${DOCKERHUB_CREDENTIALS_USR}/frontend-teachua:${VERSION}"
     }
-
     stages {
         stage('Print version') {
             steps {
                 echo "🚀 Starting release for version ${VERSION}"
             }
         }
-
         stage('Checkout') {
             steps {
                 checkout scm
