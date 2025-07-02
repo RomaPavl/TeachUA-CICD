@@ -20,7 +20,6 @@ pipeline {
                 checkout scm
             }
         }
-/*
         stage('Backend compile for sonar') {
             steps {
                 dir ('backend'){
@@ -42,7 +41,6 @@ pipeline {
                 }
             }
         }
-*/
         stage("Build backend image"){
             steps{
                 dir ('backend'){
