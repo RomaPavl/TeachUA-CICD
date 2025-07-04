@@ -69,3 +69,6 @@ variable "postgres_db_name_secret_name" {
   type        = string
   default     = "db-name"
 }
+variable "db_host_value" {
+  type = string
+}

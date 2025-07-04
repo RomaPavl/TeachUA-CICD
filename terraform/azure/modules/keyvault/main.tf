@@ -52,3 +52,8 @@ resource "azurerm_key_vault_secret" "postgres_admin_password" {
   depends_on   = [azurerm_key_vault_access_policy.current_user]
 }
 
+resource "azurerm_key_vault_secret" "db_host_value" {
+  name         = "db-host"
+  value        = var.db_host_value  # Використовуємо передану змінну
+  key_vault_id = azurerm_key_vault.main.id
+}

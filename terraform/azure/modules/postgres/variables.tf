@@ -52,3 +52,7 @@ variable "postgres_zone" {
   type        = string
   default     = "1"
 }
+variable "allowed_ips" {
+  type = map(string)
+  description = "Map of IP addresses to allow in firewall rules"
+}

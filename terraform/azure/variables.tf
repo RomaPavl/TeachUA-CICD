@@ -61,7 +61,6 @@ variable "subnets" {
     }
   ]
 }
-
 variable "nsg_name" {
   type    = string
   default = "yura-nsg"
@@ -96,21 +95,39 @@ variable "security_rules" {
       direction                  = "Inbound"
       access                     = "Allow"
       protocol                   = "Tcp"
-      destination_port_range     = "3000"
-      source_address_prefix      = "*"
-      destination_address_prefix = "*"
-      source_port_range          = "*"
-    },
-    {
-      name                       = "AllowBackend"
-      priority                   = 1003
-      direction                  = "Inbound"
-      access                     = "Allow"
-      protocol                   = "Tcp"
-      destination_port_range     = "5000"
+      destination_port_range     = "80"
       source_address_prefix      = "*"
       destination_address_prefix = "*"
       source_port_range          = "*"
     }
   ]
+}
+
+locals {
+  additional_rules = [
+    {
+      name                       = "AllowWeb"
+      priority                   = 100
+      direction                  = "Inbound"
+      access                     = "Allow"
+      protocol                   = "Tcp"
+      source_address_prefix      = "*"
+      source_port_range          = "*"
+      destination_address_prefix = module.vm.public_ips["frontend"]
+      destination_port_range     = "443"
+    },
+    {
+      name                       = "AllowFrontendToBackend"
+      priority                   = 110
+      direction                  = "Inbound"
+      access                     = "Allow"
+      protocol                   = "Tcp"
+      source_address_prefix      = module.vm.private_ips["frontend"]
+      source_port_range          = "*"
+      destination_address_prefix = module.vm.private_ips["backend"]
+      destination_port_range     = "8080"
+    }
+  ]
+  
+  all_rules = concat(var.security_rules, local.additional_rules)
 }

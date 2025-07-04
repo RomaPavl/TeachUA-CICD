@@ -22,7 +22,7 @@ module "security" {
   location            = var.location
 
   nsg_name = var.nsg_name
-  rules    = var.security_rules   # список об’єктів з правилами
+  rules    = local.all_rules   # список об’єктів з правилами
 }
 
 module "vm" {
@@ -49,6 +49,19 @@ module "vm" {
   }
 }
 
+resource "azurerm_dns_zone" "public" {
+  name                = "teachua.com"  # Ваш домен
+  resource_group_name = azurerm_resource_group.main.name
+}
+
+# A-запис для фронтенду
+resource "azurerm_dns_a_record" "frontend" {
+  name                = "@"
+  zone_name           = azurerm_dns_zone.public.name
+  resource_group_name = azurerm_resource_group.main.name
+  ttl                 = 300
+  records             = [module.vm.public_ips["frontend"]]
+}
 
 module "keyvault" {
   source  = "./modules/keyvault"
@@ -61,7 +74,8 @@ module "keyvault" {
   object_id                 = data.azurerm_client_config.current.object_id
   ssh_public_key_value      = var.ssh_public_key
   db_password_value         = var.db_password
-  postgres_admin_user_value       = var.postgres_admin_user
+  db_host_value             = module.postgres.db_host
+  postgres_admin_user_value = var.postgres_admin_user
   postgres_admin_password_value  = var.postgres_admin_password
   postgres_db_name_value          = var.postgres_db_name
 }
@@ -69,11 +83,14 @@ module "keyvault" {
 module "postgres" {
   source  = "./modules/postgres"
   depends_on = [azurerm_resource_group.main]
-
   resource_group_name    = azurerm_resource_group.main.name
   location               = var.location
   postgres_server_name   = var.postgres_server_name
   postgres_admin_user    = var.postgres_admin_user
   postgres_admin_password= var.postgres_admin_password
   postgres_db_name       = var.postgres_db_name
+  allowed_ips = {
+    backend = module.vm.private_ips["backend"]
+  }
 }
+
