@@ -16,7 +16,8 @@ WORKDIR /app
 
 # Copy the packaged JAR from build stage
 COPY --from=build /app/target/*.war app.war
-
+COPY setenv.sh /app/setenv.sh
+RUN chmod +x /app/setenv.sh
 # Expose application port
 EXPOSE 8080
 
