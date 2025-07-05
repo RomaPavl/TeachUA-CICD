@@ -75,12 +75,44 @@ pipeline {
                 string(credentialsId: 'service-acc-client-email', variable: 'SERVICE_ACCOUNT_CLIENT_EMAIL'),
                 string(credentialsId: 'service-acc-private-key', variable: 'SERVICE_ACCOUNT_PRIVATE_KEY')
            ]) {
-              sh '''
-                envsubst < setenv-temp.sh > setenv.sh
-                chmod +x setenv.sh
-              '''
-             }
-          }
+                bat '''
+                    echo Creating setenv.sh ...
+                    echo #!/bin/bash > backend\\setenv.sh
+                    echo export MY_PASSWORD="%MY_PASSWORD%" >> backend\\setenv.sh
+                    echo export JWT_SECRET="%JWT_SECRET%" >> backend\\setenv.sh
+                    echo export JWT_ACCESS_SECRET="%JWT_ACCESS_SECRET%" >> backend\\setenv.sh
+                    echo export JWT_REFRESH_SECRET="%JWT_REFRESH_SECRET%" >> backend\\setenv.sh
+                    echo export JWT_ACCESS_SECRET_KEY="%JWT_ACCESS_SECRET_KEY%" >> backend\\setenv.sh
+                    echo export JWT_REFRESH_SECRET_KEY="%JWT_REFRESH_SECRET_KEY%" >> backend\\setenv.sh
+                    echo export PRIVATE_KEY="%PRIVATE_KEY%" >> backend\\setenv.sh
+                    echo export GOOGLE_MAP_KEY="%GOOGLE_MAP_KEY%" >> backend\\setenv.sh
+                    echo export PROD_BASE_URI="%PROD_BASE_URI%" >> backend\\setenv.sh
+                    echo export DEV2_DATASOURCE_URL="%DEV2_DATASOURCE_URL%" >> backend\\setenv.sh
+                    echo export DEV2_DATASOURCE_USER="%DEV2_DATASOURCE_USER%" >> backend\\setenv.sh
+                    echo export DEV2_DATASOURCE_PASSWORD="%DEV2_DATASOURCE_PASSWORD%" >> backend\\setenv.sh
+                    echo export PUBLIC_URL="%PUBLIC_URL%" >> backend\\setenv.sh
+                    echo export PROD_PUBLIC_URL="%PROD_PUBLIC_URL%" >> backend\\setenv.sh
+                    echo export UPLOAD_PATH="%UPLOAD_PATH%" >> backend\\setenv.sh
+                    echo export STATIC_FOLDER="%STATIC_FOLDER%" >> backend\\setenv.sh
+                    echo export BASE_URI="%BASE_URI%" >> backend\\setenv.sh
+                    echo export BASE_URL="%BASE_URL%" >> backend\\setenv.sh
+                    echo export PROD_BASE_URL="%PROD_BASE_URL%" >> backend\\setenv.sh
+                    echo export USER_EMAIL="%USER_EMAIL%" >> backend\\setenv.sh
+                    echo export USER_PASSWORD="%USER_PASSWORD%" >> backend\\setenv.sh
+                    echo export SEND_PASSWORD="%SEND_PASSWORD%" >> backend\\setenv.sh
+                    echo export URL_LOGS="%URL_LOGS%" >> backend\\setenv.sh
+                    echo export OAUTH2_GOOGLE_CLIENT_ID="%OAUTH2_GOOGLE_CLIENT_ID%" >> backend\\setenv.sh
+                    echo export OAUTH2_GOOGLE_CLIENT_SECRET="%OAUTH2_GOOGLE_CLIENT_SECRET%" >> backend\\setenv.sh
+                    echo export OAUTH2_FACEBOOK_CLIENT_ID="%OAUTH2_FACEBOOK_CLIENT_ID%" >> backend\\setenv.sh
+                    echo export OAUTH2_FACEBOOK_CLIENT_SECRET="%OAUTH2_FACEBOOK_CLIENT_SECRET%" >> backend\\setenv.sh
+                    echo export DATASOURCE_URL="%DATASOURCE_URL%" >> backend\\setenv.sh
+                    echo export DATASOURCE_USER="%DATASOURCE_USER%" >> backend\\setenv.sh
+                    echo export DATASOURCE_PASSWORD="%DATASOURCE_PASSWORD%" >> backend\\setenv.sh
+                    echo export SERVICE_ACCOUNT_CLIENT_EMAIL="%SERVICE_ACCOUNT_CLIENT_EMAIL%" >> backend\\setenv.sh
+                    echo export SERVICE_ACCOUNT_PRIVATE_KEY="%SERVICE_ACCOUNT_PRIVATE_KEY%" >> backend\\setenv.sh
+                '''
+              }
+           }
         }
         stage("Build backend image"){
             steps{
