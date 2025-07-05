@@ -17,7 +17,9 @@ WORKDIR /app
 # Copy the packaged JAR from build stage
 COPY --from=build /app/target/*.war app.war
 COPY ./setenv.sh /app/setenv.sh
-RUN chmod +x /app/setenv.sh
+RUN apt-get update && apt-get install -y dos2unix \
+ && dos2unix /app/setenv.sh \
+ && chmod +x /app/setenv.sh
 # Expose application port
 EXPOSE 8080
 
