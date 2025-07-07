@@ -18,3 +18,9 @@ resource "azurerm_network_security_rule" "rules" {
   destination_address_prefix = each.value.destination_address_prefix
   destination_port_range     = each.value.destination_port_range
 }
+
+resource "azurerm_subnet_network_security_group_association" "this" {
+  for_each = var.subnet_ids
+  subnet_id = each.value
+  network_security_group_id = azurerm_network_security_group.this.id
+}

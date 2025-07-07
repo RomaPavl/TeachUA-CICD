@@ -21,6 +21,9 @@ variable "frontend_name" {
 variable "backend_name" {
   description = "Name of backend VM"
 }
+variable "monitoring_name" {
+  description = "Name of backend VM"
+}
 variable "key_vault_name" {
   description = "Name Azure Key Vault"
   default     = "yura-keyvault"
@@ -126,8 +129,29 @@ locals {
       source_port_range          = "*"
       destination_address_prefix = module.vm.private_ips["backend"]
       destination_port_range     = "8080"
+    },
+    {
+      name                       = "AllowMonitoringHTTP1"
+      priority                   = 120
+      direction                  = "Inbound"
+      access                     = "Allow"
+      protocol                   = "Tcp"
+      source_address_prefix      = "45.12.26.127" # <- заміни на свій реальний публічний IP
+      source_port_range          = "*"
+      destination_address_prefix = "*"
+      destination_port_range     = "3000-3030"
+    }, 
+    {
+      name                       = "AllowMonitoringHTTP2"
+      priority                   = 121
+      direction                  = "Inbound"
+      access                     = "Allow"
+      protocol                   = "Tcp"
+      source_address_prefix      = "45.12.26.127" # <- заміни на свій реальний публічний IP
+      source_port_range          = "*"
+      destination_address_prefix = "*"
+      destination_port_range     = "9090"
     }
   ]
-  
   all_rules = concat(var.security_rules, local.additional_rules)
 }

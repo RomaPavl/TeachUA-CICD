@@ -16,6 +16,7 @@ variable "subnets" {
     address_prefix  = string
   }))
   default = [
-    { name = "default", address_prefix = "10.0.1.0/24" }
+    { name = "default", address_prefix = "10.0.1.0/24" },
+    { name = "postgres-subnet", address_prefix = "10.0.2.0/24" }
   ]
 }

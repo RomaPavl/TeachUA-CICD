@@ -13,7 +13,9 @@ module "network" {
 
   vnet_name      = var.vnet_name
   address_space  = var.address_space
-  subnets        = var.subnets     # список з об’єктами name/address_prefix
+  subnets = [
+    { name = "default", address_prefix = "10.0.1.0/24" }
+  ]    
 }
 
 module "security" {
@@ -42,6 +44,12 @@ module "vm" {
     }
     backend = {
       name      = var.backend_name
+      subnet_id = module.network.subnet_ids["default"]
+      nsg_id    = module.security.nsg_id
+      public_ip = true
+    }
+    monitoring = {
+      name      = var.monitoring_name
       subnet_id = module.network.subnet_ids["default"]
       nsg_id    = module.security.nsg_id
       public_ip = true
@@ -91,6 +99,7 @@ module "postgres" {
   postgres_db_name       = var.postgres_db_name
   allowed_ips = {
     backend = module.vm.private_ips["backend"]
+    monitoring = module.vm.private_ips["monitoring"]
   }
 }
 

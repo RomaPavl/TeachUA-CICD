@@ -6,6 +6,12 @@ variable "nsg_name" {
   default = "nsg"
 }
 
+variable "subnet_ids" {
+  description = "Map of subnet names to subnet IDs that need this NSG"
+  type        = map(string)
+  default     = {}
+}
+
 variable "rules" {
   type = list(object({
     name                       = string
