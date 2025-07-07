@@ -143,6 +143,11 @@ pipeline {
             steps {
                 bat "docker push ${FRONTEND_IMAGE}"
             }
+        } 
+    }
+    post {
+        success {
+            build job: 'TeachUA-CICD', wait: false
         }
     }
 }
