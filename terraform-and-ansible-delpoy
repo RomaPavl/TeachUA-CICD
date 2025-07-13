@@ -4,7 +4,8 @@ pipeline {
     environment {
         TERRAFORM_DIR = './terraform/azure'
         INVENTORY_FILE = './ansible/inventory/hosts.ini'
-        TFVARS_FILE = 'config.auto.tfvars.json'
+        TFVARS_FILE = 'config.auto.tfvars.json',
+        TFPLAN_JSON = './terraform/azure/tfplan.json'
     }
     
     stages {
@@ -16,14 +17,14 @@ pipeline {
                     string(credentialsId: 'location', variable: 'LOCATION'),
                     string(credentialsId: 'resource_group_name', variable: 'RESOURCE_GROUP'),
                     string(credentialsId: 'admin_username', variable: 'ADMIN_USERNAME'),
-                    string(credentialsId: 'backend_name	', variable: 'BACKEND_NAME'),
-                    string(credentialsId: 'monitoring_namee', variable: 'MONITORING_NAME'),
+                    string(credentialsId: 'backend_name', variable: 'BACKEND_NAME'),
+                    string(credentialsId: 'monitoring_name', variable: 'MONITORING_NAME'),
                     string(credentialsId: 'frontend_name', variable: 'FRONTEND_NAME'),
                     string(credentialsId: 'key_vault_name', variable: 'KEY_VAULT_NAME'),
                     string(credentialsId: 'postgres_server_name', variable: 'POSTGRES_SERVER_NAME'),
-                    string(credentialsId: 'postgres_db_name	', variable: 'POSTGRES_DB_NAME'),
-                    string(credentialsId: 'postgres_admin_user	', variable: 'POSTGRES_ADMIN_USER'),
-                    string(credentialsId: 'postgres_admin_password	', variable: 'POSTGRES_ADMIN_PASSWORD'),
+                    string(credentialsId: 'postgres_db_name', variable: 'POSTGRES_DB_NAME'),
+                    string(credentialsId: 'postgres_admin_user', variable: 'POSTGRES_ADMIN_USER'),
+                    string(credentialsId: 'postgres_admin_password', variable: 'POSTGRES_ADMIN_PASSWORD'),
           // додай інші секрети по потребі
         ]) {
             script {
@@ -56,26 +57,24 @@ pipeline {
                 dir("${env.TERRAFORM_DIR}") {
                     bat 'terraform init'
                     bat 'terraform plan -out=tfplan'
+                    bat 'terraform show -json tfplan > tfplan.json'
                 }
             }
         }
 
         stage('Terraform Apply if Changes') {
             steps {
-                dir("${env.TERRAFORM_DIR}") {
-                    script {
-                        def planOutput = sh(script: 'terraform show -json tfplan', returnStdout: true)
-                        def hasChanges = !planOutput.contains('"resource_changes":[]')
+                script {
+                    def planJson = readFile(env.TFPLAN_JSON)
+                    def hasChanges = !planJson.contains('"resource_changes":[]')
 
-                        if (hasChanges) {
-                            echo "Зміни є — застосовуємо Terraform"
-                            bat 'terraform apply -auto-approve tfplan'
-                        } else {
-                            echo "Змін немає — пропускаємо apply"
-                        }
+                    if (hasChanges) {
+                        echo "✅ Зміни виявлено — застосовуємо Terraform"
+                        bat "cd ${env.TERRAFORM_DIR} && terraform apply -auto-approve tfplan"
+                    } else {
+                        echo "ℹ️ Змін не виявлено — крок apply пропущено"
                     }
                 }
             }
         }
-
         
