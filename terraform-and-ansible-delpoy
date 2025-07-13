@@ -4,7 +4,7 @@ pipeline {
     environment {
         TERRAFORM_DIR = './terraform/azure'
         INVENTORY_FILE = './ansible/inventory/hosts.ini'
-        TFVARS_FILE = 'config.auto.tfvars.json',
+        TFVARS_FILE = 'config.auto.tfvars.json'
         TFPLAN_JSON = './terraform/azure/tfplan.json'
     }
     
