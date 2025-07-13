@@ -71,7 +71,7 @@ pipeline {
                     bat 'terraform init'
                     bat 'terraform plan -out=tfplan'
                     bat 'terraform show -json tfplan > tfplan.json'
-                ]
+                }
             }
         }
     }
