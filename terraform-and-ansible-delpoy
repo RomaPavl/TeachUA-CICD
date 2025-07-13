@@ -54,7 +54,7 @@ pipeline {
                 "subscription_id": "${TF_SUBSCRIPTION_ID}"
             }
             """
-            writeFile file: env.TFVARS_FILE, text: tfvarsContent
+            writeFile file: "${env.TERRAFORM_DIR}/config.auto.tfvars.json", text: tfvarsContent
           }
          }
        }
