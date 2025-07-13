@@ -1,0 +1,81 @@
+pipeline {
+    agent any
+
+    environment {
+        TERRAFORM_DIR = './terraform/azure'
+        INVENTORY_FILE = './ansible/inventory/hosts.ini'
+        TFVARS_FILE = 'config.auto.tfvars.json'
+    }
+    
+    stages {
+        stage('Prepare tfvars with secrets') {
+            steps {
+                withCredentials([
+                    string(credentialsId: 'datasource-pass', variable: 'DB_PASSWORD'),
+                    string(credentialsId: 'ssh_public_key', variable: 'SSH_PUB_KEY'),
+                    string(credentialsId: 'location', variable: 'LOCATION'),
+                    string(credentialsId: 'resource_group_name', variable: 'RESOURCE_GROUP'),
+                    string(credentialsId: 'admin_username', variable: 'ADMIN_USERNAME'),
+                    string(credentialsId: 'backend_name	', variable: 'BACKEND_NAME'),
+                    string(credentialsId: 'monitoring_namee', variable: 'MONITORING_NAME'),
+                    string(credentialsId: 'frontend_name', variable: 'FRONTEND_NAME'),
+                    string(credentialsId: 'key_vault_name', variable: 'KEY_VAULT_NAME'),
+                    string(credentialsId: 'postgres_server_name', variable: 'POSTGRES_SERVER_NAME'),
+                    string(credentialsId: 'postgres_db_name	', variable: 'POSTGRES_DB_NAME'),
+                    string(credentialsId: 'postgres_admin_user	', variable: 'POSTGRES_ADMIN_USER'),
+                    string(credentialsId: 'postgres_admin_password	', variable: 'POSTGRES_ADMIN_PASSWORD'),
+          // додай інші секрети по потребі
+        ]) {
+            script {
+            // Створюємо JSON файл для tfvars
+            def tfvarsContent = """
+            {
+                "location": "${LOCATION}",
+                "resource_group_name": "${RESOURCE_GROUP}",
+                'admin_username': "${ADMIN_USERNAME}",
+                "ssh_public_key": "${SSH_PUB_KEY}",
+                "db_password": "${DB_PASSWORD}",
+                "frontend_name": "${FRONTEND_NAME}",
+                "backend_name": "${BACKEND_NAME}",
+                "monitoring_name": "${MONITORING_NAME}",
+                "key_vault_name": "${KEY_VAULT_NAME}",
+                "postgres_server_name": "${POSTGRES_SERVER_NAME}",
+                "postgres_db_name": "${POSTGRES_DB_NAME}",
+                "postgres_admin_user": "${POSTGRES_ADMIN_USER}",
+                "postgres_admin_password": "${POSTGRES_ADMIN_PASSWORD}"
+
+            }
+            """
+            writeFile file: env.TFVARS_FILE, text: tfvarsContent
+          }
+         }
+       }
+     }
+        stage('Terraform Init & Plan') {
+            steps {
+                dir("${env.TERRAFORM_DIR}") {
+                    bat 'terraform init'
+                    bat 'terraform plan -out=tfplan'
+                }
+            }
+        }
+
+        stage('Terraform Apply if Changes') {
+            steps {
+                dir("${env.TERRAFORM_DIR}") {
+                    script {
+                        def planOutput = sh(script: 'terraform show -json tfplan', returnStdout: true)
+                        def hasChanges = !planOutput.contains('"resource_changes":[]')
+
+                        if (hasChanges) {
+                            echo "Зміни є — застосовуємо Terraform"
+                            bat 'terraform apply -auto-approve tfplan'
+                        } else {
+                            echo "Змін немає — пропускаємо apply"
+                        }
+                    }
+                }
+            }
+        }
+
+        
