@@ -125,10 +125,10 @@ pipeline {
                     script {
                         def inventoryContent = """
 [frontend]
-frontend ansible_host=${env.FRONTEND_IP} ansible_user=azureuser ansible_python_interpreter=/usr/bin/python3 ansible_ssh_common_args='-o StrictHostKeyChecking=no'
+frontend ansible_host=${env.FRONTEND_IP} ansible_user=azureuser ansible_ssh_private_key_file=~/.ssh/id_rsa ansible_python_interpreter=/usr/bin/python3 ansible_ssh_common_args='-o StrictHostKeyChecking=no'
 
 [backend]
-backend ansible_host=${env.BACKEND_IP} ansible_user=azureuser ansible_python_interpreter=/usr/bin/python3 ansible_ssh_common_args='-o StrictHostKeyChecking=no'
+backend ansible_host=${env.BACKEND_IP} ansible_user=azureuser ansible_ssh_private_key_file=~/.ssh/id_rsa ansible_python_interpreter=/usr/bin/python3 ansible_ssh_common_args='-o StrictHostKeyChecking=no'
 """
                         writeFile file: 'ansible/azure/inventory/hosts.ini', text: inventoryContent
                     }
@@ -154,7 +154,6 @@ backend ansible_host=${env.BACKEND_IP} ansible_user=azureuser ansible_python_int
                         def sshKeyPathWsl = "${SSH_KEY}".replace('C:', '/mnt/c').replaceAll('\\\\', '/')
                         // Backend
                         bat """
-            wsl chmod 600 '${sshKeyPathWsl}'
             wsl bash -c "DOCKERHUB_USERNAME='${DOCKERHUB_USERNAME}' DOCKERHUB_PASSWORD='${DOCKERHUB_PASSWORD}' ansible-playbook ${ansibleDir}/playbooks/backend.yml -i ${ansibleDir}/inventory/hosts.ini --private-key='${sshKeyPathWsl}'"
         """
                     }
@@ -174,7 +173,6 @@ backend ansible_host=${env.BACKEND_IP} ansible_user=azureuser ansible_python_int
                         def sshKeyPathWsl = "${SSH_KEY}".replace('C:', '/mnt/c').replaceAll('\\\\', '/')
                         // Frontend (з передачею backend_host=приватна IP бекенда)
                         bat """
-            wsl chmod 600 '${sshKeyPathWsl}'
             wsl bash -c "DOCKERHUB_USERNAME='${DOCKERHUB_USERNAME}' DOCKERHUB_PASSWORD='${DOCKERHUB_PASSWORD}' ansible-playbook ${ansibleDir}/playbooks/frontend.yml -i ${ansibleDir}/inventory/hosts.ini --private-key='${sshKeyPathWsl}' -e 'backend_host=${backendHostPriv}'"
         """
                     }
