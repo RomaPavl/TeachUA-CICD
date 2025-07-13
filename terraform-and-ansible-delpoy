@@ -160,7 +160,7 @@ backend ansible_host=${env.BACKEND_IP} ansible_user=azureuser ansible_ssh_privat
                 }
             }
         }
-       stage('Run Ansible Backend Playbook') {
+       stage('Run Ansible Frontend Playbook') {
             steps {
                 withCredentials([
                     sshUserPrivateKey(credentialsId: 'azure-ssh-key', keyFileVariable: 'SSH_KEY'),
