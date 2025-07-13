@@ -97,32 +97,5 @@ pipeline {
                 }
             }
         }
-       stage('Migrate state to Azure') {
-        steps {
-        dir("${env.TERRAFORM_DIR}") {
-            withCredentials([
-  string(credentialsId: 'clientId', variable: 'TF_CLIENT_ID'),
-  string(credentialsId: 'clientSecret', variable: 'TF_CLIENT_SECRET'),
-  string(credentialsId: 'tenant_id', variable: 'TF_TENANT_ID'),
-  string(credentialsId: 'subscription_id', variable: 'TF_SUBSCRIPTION_ID')
-]) {
-            withEnv([
-                "ARM_CLIENT_ID=${TF_CLIENT_ID}",
-                "ARM_CLIENT_SECRET=${TF_CLIENT_SECRET}",
-                "ARM_TENANT_ID=${TF_TENANT_ID}",
-                "ARM_SUBSCRIPTION_ID=${TF_SUBSCRIPTION_ID}"
-            ]) {
-                bat '''
-                    terraform init -force-copy -migrate-state ^
-                        -backend-config="resource_group_name=roma-devops-rg" ^
-                        -backend-config="storage_account_name=myterraformstate" ^
-                        -backend-config="container_name=tfstate" ^
-                        -backend-config="key=terraform.tfstate"
-                '''
-               }
-            }
-        }
-    }
-}
     }
 }
