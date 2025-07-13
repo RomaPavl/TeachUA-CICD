@@ -1,0 +1,98 @@
+---
+- name: Ensure Docker, Git & pip are installed
+  apt:
+    name:
+      - docker.io
+      - git
+      - python3-pip
+    state: present
+    update_cache: yes
+  become: true
+
+- name: Install Docker SDK for Ansible modules
+  pip:
+    name: docker
+    executable: pip3
+  become: true
+
+- name: Ensure Docker is running
+  service:
+    name: docker
+    state: started
+    enabled: yes
+  become: true
+
+- name: Install PostgreSQL client and dependencies
+  apt:
+    name:
+      - postgresql-client
+      - python3-psycopg2
+    state: present
+    update_cache: yes
+  become: true
+
+- name: Create Docker network for service discovery
+  community.docker.docker_network:
+    name: "{{ network_name }}"
+    state: present
+
+- name: Pull frontend image from Docker Hub
+  community.docker.docker_image:
+    name: "{{ docker_image }}"
+    tag: "{{ docker_image_tag }}"
+    source: pull
+
+- name: Copy database dump file to /tmp
+  copy:
+    src: "{{ dump_file }}"
+    dest: "/tmp/{{ dump_file }}"
+    mode: '0644'
+
+- name: Create application database user
+  community.postgresql.postgresql_user:
+    login_host: "{{ postgres_host }}"
+    login_port: "{{ postgres_port }}"
+    login_user: "{{ postgres_admin_user }}"
+    login_password: "{{ postgres_admin_password }}"
+    login_db: "postgres"
+    ssl_mode: require
+    name: "{{ app_db_user }}"
+    password: "{{ app_db_password }}"
+    encrypted: yes
+    state: present
+
+- name: Create application database
+  community.postgresql.postgresql_db:
+    login_host: "{{ postgres_host }}"
+    login_port: "{{ postgres_port }}"
+    login_user: "{{ postgres_admin_user }}"
+    login_password: "{{ postgres_admin_password }}"
+    maintenance_db: "postgres"
+    ssl_mode: require
+    name: "{{ app_db_name }}"
+    state: present
+
+- name: Restore database from dump
+  shell: |
+    PGPASSWORD="{{ postgres_admin_password }}" \
+    psql "host={{ postgres_host }} \
+          port={{ postgres_port }} \
+          dbname={{ app_db_name }} \
+          user={{ postgres_admin_user }} \
+          sslmode=require" \
+       < /tmp/{{ dump_file }}
+  args:
+    executable: /bin/bash
+
+- name: Deploy & start the backend container (with env_file)
+  community.docker.docker_container:
+    name: "{{ container_name }}"
+    image: "{{ docker_image }}:{{ docker_image_tag }}"
+    state: started
+
+    restart_policy: always
+    networks:
+      - name: "{{ network_name }}"
+    ports: "{{ ports }}"
+  become: true
+

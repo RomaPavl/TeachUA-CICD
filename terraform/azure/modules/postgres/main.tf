@@ -15,18 +15,12 @@ resource "azurerm_postgresql_flexible_server" "main" {
   public_network_access_enabled = true
 }
 
-resource "azurerm_postgresql_flexible_server_firewall_rule" "allow_azure_services" {
-  name            = "allow-azure-internal"
-  server_id       = azurerm_postgresql_flexible_server.main.id
-  start_ip_address = "0.0.0.0"
-  end_ip_address   = "0.0.0.0"
-}
-
-resource "azurerm_postgresql_flexible_server_firewall_rule" "allow_ansibble" {
-  name             = "allow_ansible"
+resource "azurerm_postgresql_flexible_server_firewall_rule" "allow_backend_public_ip" {
+  for_each         = var.allowed_ips
+  name             = "allow-${each.key}"
   server_id        = azurerm_postgresql_flexible_server.main.id
-  start_ip_address = "45.12.26.127"
-  end_ip_address   = "45.12.26.127"
+  start_ip_address = each.value
+  end_ip_address   = each.value
 }
 
 resource "azurerm_postgresql_flexible_server_database" "main" {

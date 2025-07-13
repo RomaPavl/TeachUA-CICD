@@ -98,8 +98,8 @@ module "postgres" {
   postgres_admin_password= var.postgres_admin_password
   postgres_db_name       = var.postgres_db_name
   allowed_ips = {
-    backend = module.vm.private_ips["backend"]
-    monitoring = module.vm.private_ips["monitoring"]
+    backend = module.vm.public_ips["backend"]
+    monitoring = module.vm.public_ips["monitoring"]
   }
 }
 

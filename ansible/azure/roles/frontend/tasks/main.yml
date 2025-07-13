@@ -1,0 +1,54 @@
+---
+# Install Docker & Python SDK, then pull & run frontend container
+
+- name: Ensure Docker & Python3-pip are installed
+  apt:
+    name:
+      - docker.io
+      - python3-pip
+    state: present
+    update_cache: yes
+  become: true
+
+- name: Install Docker Python SDK for Ansible modules
+  pip:
+    name: docker
+    executable: pip3
+  become: true
+
+- name: Ensure Docker service is running
+  service:
+    name: docker
+    state: started
+    enabled: yes
+  become: true
+
+- name: Create Docker network for inter-container DNS
+  community.docker.docker_network:
+    name: "{{ network_name }}"
+    state: present
+
+- name: Pull frontend image from Docker Hub
+  community.docker.docker_image:
+    name: "{{ docker_image }}"
+    tag: "{{ docker_image_tag }}"
+    source: pull
+
+- name: Template custom Nginx configuration
+  template:
+    src: nginx.conf.j2
+    dest: /tmp/nginx.conf
+    mode: '0777'
+
+- name: Deploy & start the frontend container
+  community.docker.docker_container:
+    name: "{{ container_name }}"
+    image: "{{ docker_image }}:{{ docker_image_tag }}"
+    state: started
+    restart_policy: always
+    networks:
+      - name: "{{ network_name }}"
+    ports:
+      - "80:80"
+    volumes:
+      - "/tmp/nginx.conf:/etc/nginx/nginx.conf:ro"

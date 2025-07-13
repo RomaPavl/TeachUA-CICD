@@ -1,0 +1,6 @@
+docker_image:            "{{ docker_image | default('rodriguez2711/frontend-teachua') }}"
+docker_image_tag:        "{{ docker_image_tag | default('27') }}"
+container_name:          "{{ container_name | default('frontend-teachua') }}"
+network_name:            "{{ network_name | default('teachua_net') }}"
+backend_host:            "{{ backend_host | default('backend') }}"
+backend_port:            "{{ backend_port | default(8080) }}"

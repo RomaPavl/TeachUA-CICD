@@ -6,7 +6,7 @@ postgres_admin_password: ""
 db_name: teachua
 db_user: pmp2025
 db_password: Pmp#2025
-dump_file: teachua_dump.sql
+dump_file: teachua_full_dump.sql
   # # Required packages on control host
 packages:
   - postgresql-client
