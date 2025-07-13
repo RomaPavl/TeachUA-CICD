@@ -98,7 +98,7 @@ pipeline {
             steps {
                 script {
                     def hasChanges = readFile("${env.TERRAFORM_DIR}/changes.flag").trim()
-                    if (hasChanges) {
+                    if (hasChanges == "true") {
                         echo Зміни виявлено — застосовуємо Terraform
                         bat "cd ${env.TERRAFORM_DIR} && terraform apply -auto-approve tfplan"
                     } else {
