@@ -21,6 +21,18 @@ variable "frontend_name" {
 variable "backend_name" {
   description = "Name of backend VM"
 }
+variable "subscription_id" {
+  type = string
+}
+variable "tenant_id" {
+  type = string
+}
+variable "client_id" {
+  type = string
+}
+variable "client_secret" {
+  type = string
+}
 variable "monitoring_name" {
   description = "Name of backend VM"
 }
