@@ -37,7 +37,7 @@ pipeline {
             {
                 "location": "${LOCATION}",
                 "resource_group_name": "${RESOURCE_GROUP}",
-                'admin_username': "${ADMIN_USERNAME}",
+                "admin_username": "${ADMIN_USERNAME}",
                 "ssh_public_key": "${SSH_PUB_KEY}",
                 "db_password": "${DB_PASSWORD}",
                 "frontend_name": "${FRONTEND_NAME}",
