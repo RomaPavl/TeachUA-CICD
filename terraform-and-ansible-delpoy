@@ -7,7 +7,6 @@ pipeline {
         TFVARS_FILE = 'config.auto.tfvars.json'
         TFPLAN_JSON = './terraform/azure/tfplan.json'
     }
-    
     stages {
         stage('Prepare tfvars with secrets') {
             steps {
@@ -29,11 +28,11 @@ pipeline {
                     string(credentialsId: 'clientSecret', variable: 'TF_CLIENT_SECRET'),
                     string(credentialsId: 'tenant_id', variable: 'TF_TENANT_ID'),
                     string(credentialsId: 'subscription_id', variable: 'TF_SUBSCRIPTION_ID')
-          // додай інші секрети по потребі
+        // додай інші секрети по потребі
         ]) {
-            script {
-            // Створюємо JSON файл для tfvars
-            def tfvarsContent = """
+                    script {
+                        // Створюємо JSON файл для tfvars
+                        def tfvarsContent = """
             {
                 "location": "${LOCATION}",
                 "resource_group_name": "${RESOURCE_GROUP}",
@@ -54,27 +53,27 @@ pipeline {
                 "subscription_id": "${TF_SUBSCRIPTION_ID}"
             }
             """
-            writeFile file: "${env.TERRAFORM_DIR}/config.auto.tfvars.json", text: tfvarsContent
-          }
-         }
-       }
-     }
+                        writeFile file: "${env.TERRAFORM_DIR}/config.auto.tfvars.json", text: tfvarsContent
+                    }
+        }
+            }
+        }
         stage('Terraform Init & Plan') {
             steps {
                 dir("${env.TERRAFORM_DIR}") {
                     withCredentials([
-  string(credentialsId: 'clientId', variable: 'TF_CLIENT_ID'),
-  string(credentialsId: 'clientSecret', variable: 'TF_CLIENT_SECRET'),
-  string(credentialsId: 'tenant_id', variable: 'TF_TENANT_ID'),
-  string(credentialsId: 'subscription_id', variable: 'TF_SUBSCRIPTION_ID')
-]) {
-  withEnv([
-    "ARM_CLIENT_ID=${TF_CLIENT_ID}",
-    "ARM_CLIENT_SECRET=${TF_CLIENT_SECRET}",
-    "ARM_TENANT_ID=${TF_TENANT_ID}",
-    "ARM_SUBSCRIPTION_ID=${TF_SUBSCRIPTION_ID}"
-  ]) {
-                    bat '''
+                        string(credentialsId: 'clientId', variable: 'TF_CLIENT_ID'),
+                        string(credentialsId: 'clientSecret', variable: 'TF_CLIENT_SECRET'),
+                        string(credentialsId: 'tenant_id', variable: 'TF_TENANT_ID'),
+                        string(credentialsId: 'subscription_id', variable: 'TF_SUBSCRIPTION_ID')
+                    ]) {
+                        withEnv([
+                        "ARM_CLIENT_ID=${TF_CLIENT_ID}",
+                        "ARM_CLIENT_SECRET=${TF_CLIENT_SECRET}",
+                        "ARM_TENANT_ID=${TF_TENANT_ID}",
+                        "ARM_SUBSCRIPTION_ID=${TF_SUBSCRIPTION_ID}"
+                        ]) {
+                            bat '''
                         terraform init
                         terraform plan -detailed-exitcode -out=tfplan
                         IF %ERRORLEVEL% EQU 2 (
@@ -89,20 +88,82 @@ pipeline {
                             exit /b %ERRORLEVEL%
                         )
                     '''
+                        }
+                    }
                 }
             }
         }
-    }
-}
         stage('Terraform Apply if Changes') {
             steps {
                 script {
                     def hasChanges = readFile("${env.TERRAFORM_DIR}/changes.flag").trim()
-                    if (hasChanges == "true") {
-                        echo "Changes detected"
+                    if (hasChanges == 'true') {
+                        echo 'Changes detected'
                         bat "cd ${env.TERRAFORM_DIR} && terraform apply -auto-approve tfplan"
                     } else {
-                        echo "Changes are not detected"
+                        echo 'Changes are not detected'
+                    }
+                }
+            }
+        }
+        stage('Extract Terraform Outputs') {
+            steps {
+                script {
+                    bat "cd ${env.TERRAFORM_DIR} && terraform output -json > outputs.json"
+                    def tfOutput = readJSON file: "${env.TERRAFORM_DIR}/outputs.json"
+
+                    env.FRONTEND_IP   = tfOutput.public_ips.value.frontend
+                    env.BACKEND_IP    = tfOutput.public_ips.value.backend
+                    env.BACKEND_PRIV  = tfOutput.private_ips.value.backend  
+                }
+            }
+        }
+
+        stage('Generate Inventory') {
+            steps {
+                withCredentials([sshUserPrivateKey(credentialsId: 'azure-ssh-key', keyFileVariable: 'SSH_KEY_PATH')]) {
+                    script {
+                        def inventoryContent = """
+[frontend]
+frontend ansible_host=${env.FRONTEND_IP} ansible_user=azureuser ansible_ssh_private_key_file=${SSH_KEY_PATH} ansible_python_interpreter=/usr/bin/python3
+
+[backend]
+backend ansible_host=${env.BACKEND_IP} ansible_user=azureuser ansible_ssh_private_key_file=${SSH_KEY_PATH} ansible_python_interpreter=/usr/bin/python3
+"""
+                        writeFile file: 'ansible/azure/inventory/hosts.ini', text: inventoryContent
+                    }
+                }
+            }
+        }
+
+        stage('Run Ansible Playbooks') {
+            steps {
+                withCredentials([
+                    sshUserPrivateKey(credentialsId: 'azure-ssh-key', keyFileVariable: 'SSH_KEY'),
+                    usernamePassword(credentialsId: 'docker-creds', usernameVariable: 'DOCKERHUB_USERNAME', passwordVariable: 'DOCKERHUB_PASSWORD')
+                    ]) {
+                    script {
+                        def wslWorkspacePath = "${env.WORKSPACE}".replace('C:', '/mnt/c').replaceAll('\\\\', '/')
+                        def ansibleDir = "${wslWorkspacePath}/ansible/azure/"
+                        def backendHostPriv = env.BACKEND_PRIV
+                        def sshKeyPathWsl = "${SSH_KEY}".replace('C:', '/mnt/c').replaceAll('\\\\', '/')
+                        // Backend
+                        bat """
+            wsl bash -c '
+            export DOCKERHUB_USERNAME="${DOCKERHUB_USERNAME}"
+            export DOCKERHUB_PASSWORD="${DOCKERHUB_PASSWORD}"
+            ansible-playbook ${ansibleDir}/playbooks/backend.yml -i ${ansibleDir}/inventory/hosts.ini --private-key="${wslWorkspacePath}"
+            '
+        """
+
+                        // Frontend (з передачею backend_host=приватна IP бекенда)
+                        bat """
+            wsl bash -c '
+            export DOCKERHUB_USERNAME="${DOCKERHUB_USERNAME}"
+            export DOCKERHUB_PASSWORD="${DOCKERHUB_PASSWORD}"
+            ansible-playbook ${ansibleDir}/playbooks/frontend.yml -i ${ansibleDir}/inventory/hosts.ini --private-key="${wslWorkspacePath}" -e "backend_host=${backendHostPriv}"
+            '
+        """
                     }
                 }
             }
