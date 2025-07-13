@@ -155,7 +155,7 @@ backend ansible_host=${env.BACKEND_IP} ansible_user=azureuser ansible_ssh_privat
                         def sshKeyPathWsl = "${SSH_KEY}".replace('C:', '/mnt/c').replaceAll('\\\\', '/')
                         // Backend
                         bat """
-            wsl -u romko bash -c '
+            wsl bash -c '
             export DOCKERHUB_USERNAME="${DOCKERHUB_USERNAME}"
             export DOCKERHUB_PASSWORD="${DOCKERHUB_PASSWORD}"
             ansible-playbook ${ansibleDir}/playbooks/backend.yml -i ${ansibleDir}/inventory/hosts.ini --private-key="${wslWorkspacePath}"
@@ -164,7 +164,7 @@ backend ansible_host=${env.BACKEND_IP} ansible_user=azureuser ansible_ssh_privat
 
                         // Frontend (з передачею backend_host=приватна IP бекенда)
                         bat """
-            wsl -u romko bash -c '
+            wsl bash -c '
             export DOCKERHUB_USERNAME="${DOCKERHUB_USERNAME}"
             export DOCKERHUB_PASSWORD="${DOCKERHUB_PASSWORD}"
             ansible-playbook ${ansibleDir}/playbooks/frontend.yml -i ${ansibleDir}/inventory/hosts.ini --private-key="${wslWorkspacePath}" -e "backend_host=${backendHostPriv}"
