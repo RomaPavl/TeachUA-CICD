@@ -25,6 +25,10 @@ pipeline {
                     string(credentialsId: 'postgres_db_name', variable: 'POSTGRES_DB_NAME'),
                     string(credentialsId: 'postgres_admin_user', variable: 'POSTGRES_ADMIN_USER'),
                     string(credentialsId: 'postgres_admin_password', variable: 'POSTGRES_ADMIN_PASSWORD'),
+                    string(credentialsId: 'clientId', variable: 'TF_CLIENT_ID'),
+                    string(credentialsId: 'clientSecret', variable: 'TF_CLIENT_SECRET'),
+                    string(credentialsId: 'tenant_id', variable: 'TF_TENANT_ID'),
+                    string(credentialsId: 'subscription_id', variable: 'TF_SUBSCRIPTION_ID')
           // додай інші секрети по потребі
         ]) {
             script {
@@ -43,8 +47,11 @@ pipeline {
                 "postgres_server_name": "${POSTGRES_SERVER_NAME}",
                 "postgres_db_name": "${POSTGRES_DB_NAME}",
                 "postgres_admin_user": "${POSTGRES_ADMIN_USER}",
-                "postgres_admin_password": "${POSTGRES_ADMIN_PASSWORD}"
-
+                "postgres_admin_password": "${POSTGRES_ADMIN_PASSWORD}",
+                "client_id": "${TF_CLIENT_ID}",
+                "client_secret": "${TF_CLIENT_SECRET}",
+                "tenant_id": "${TF_TENANT_ID}",
+                "subscription_id": "${TF_SUBSCRIPTION_ID}"
             }
             """
             writeFile file: env.TFVARS_FILE, text: tfvarsContent
