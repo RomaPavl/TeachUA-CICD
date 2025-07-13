@@ -99,10 +99,10 @@ pipeline {
                 script {
                     def hasChanges = readFile("${env.TERRAFORM_DIR}/changes.flag").trim()
                     if (hasChanges == "true") {
-                        echo Changes detected
+                        echo "Changes detected"
                         bat "cd ${env.TERRAFORM_DIR} && terraform apply -auto-approve tfplan"
                     } else {
-                        echo Changes are not detected
+                        echo "Changes are not detected"
                     }
                 }
             }
