@@ -62,12 +62,18 @@ pipeline {
         stage('Terraform Init & Plan') {
             steps {
                 dir("${env.TERRAFORM_DIR}") {
-                    withEnv([
-                        "ARM_CLIENT_ID=${TF_CLIENT_ID}",
-                        "ARM_CLIENT_SECRET=${TF_CLIENT_SECRET}",
-                        "ARM_TENANT_ID=${TF_TENANT_ID}",
-                        "ARM_SUBSCRIPTION_ID=${TF_SUBSCRIPTION_ID}"
-                  ]) {
+                    withCredentials([
+  string(credentialsId: 'clientId', variable: 'TF_CLIENT_ID'),
+  string(credentialsId: 'clientSecret', variable: 'TF_CLIENT_SECRET'),
+  string(credentialsId: 'tenant_id', variable: 'TF_TENANT_ID'),
+  string(credentialsId: 'subscription_id', variable: 'TF_SUBSCRIPTION_ID')
+]) {
+  withEnv([
+    "ARM_CLIENT_ID=${TF_CLIENT_ID}",
+    "ARM_CLIENT_SECRET=${TF_CLIENT_SECRET}",
+    "ARM_TENANT_ID=${TF_TENANT_ID}",
+    "ARM_SUBSCRIPTION_ID=${TF_SUBSCRIPTION_ID}"
+  ]) {
                     bat 'terraform init'
                     bat 'terraform plan -out=tfplan'
                     bat 'terraform show -json tfplan > tfplan.json'
@@ -75,6 +81,7 @@ pipeline {
             }
         }
     }
+}
         stage('Terraform Apply if Changes') {
             steps {
                 script {
