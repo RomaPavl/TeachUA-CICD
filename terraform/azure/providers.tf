@@ -5,12 +5,6 @@ terraform {
       version = ">= 3.0.0"
     }
   }
-  backend "azurerm" {
-    resource_group_name  = "roma-devops-rg"       
-    storage_account_name = "myterraformstate"             
-    container_name       = "tfstate"                    
-    key                  = "terraform.tfstate"       
-  }
 }
 provider "azurerm" {
   features {
