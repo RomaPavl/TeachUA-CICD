@@ -147,7 +147,11 @@ backend ansible_host=${env.BACKEND_IP} ansible_user=azureuser ansible_ssh_privat
                 withCredentials([
                     sshUserPrivateKey(credentialsId: 'azure-ssh-key', keyFileVariable: 'SSH_KEY'),
                     usernamePassword(credentialsId: 'docker-creds', usernameVariable: 'DOCKERHUB_USERNAME', passwordVariable: 'DOCKERHUB_PASSWORD')
-                    ]) {
+                    ] )withEnv([
+                        "AZURE_CLIENT_ID=${env.AZURE_CLIENT_ID}",
+                        "AZURE_CLIENT_SECRET=${env.AZURE_CLIENT_SECRET}",
+                        "AZURE_TENANT_ID=${env.AZURE_TENANT_ID}"
+                    ]) { {
                     script {
                         def wslWorkspacePath = "${env.WORKSPACE}".replace('C:', '/mnt/c').replaceAll('\\\\', '/')
                         def ansibleDir = "${wslWorkspacePath}/ansible/azure/"
@@ -160,12 +164,17 @@ backend ansible_host=${env.BACKEND_IP} ansible_user=azureuser ansible_ssh_privat
                 }
             }
         }
+    }
        stage('Run Ansible Frontend Playbook') {
             steps {
                 withCredentials([
                     sshUserPrivateKey(credentialsId: 'azure-ssh-key', keyFileVariable: 'SSH_KEY'),
                     usernamePassword(credentialsId: 'docker-creds', usernameVariable: 'DOCKERHUB_USERNAME', passwordVariable: 'DOCKERHUB_PASSWORD')
-                    ]) {
+                    ]) withEnv([
+                        "AZURE_CLIENT_ID=${env.AZURE_CLIENT_ID}",
+                        "AZURE_CLIENT_SECRET=${env.AZURE_CLIENT_SECRET}",
+                        "AZURE_TENANT_ID=${env.AZURE_TENANT_ID}"
+                    ]) { {
                     script {
                         def wslWorkspacePath = "${env.WORKSPACE}".replace('C:', '/mnt/c').replaceAll('\\\\', '/')
                         def ansibleDir = "${wslWorkspacePath}/ansible/azure/"
@@ -180,4 +189,5 @@ backend ansible_host=${env.BACKEND_IP} ansible_user=azureuser ansible_ssh_privat
             }
         }
     }
+}
 }
