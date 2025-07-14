@@ -60,40 +60,42 @@ pipeline {
         }
 
         stage('Terraform Init & Plan') {
-            steps {
-                dir("${env.TERRAFORM_DIR}") {
-                    withCredentials([
-                        string(credentialsId: 'clientId', variable: 'TF_CLIENT_ID'),
-                        string(credentialsId: 'clientSecret', variable: 'TF_CLIENT_SECRET'),
-                        string(credentialsId: 'tenant_id', variable: 'TF_TENANT_ID'),
-                        string(credentialsId: 'subscription_id', variable: 'TF_SUBSCRIPTION_ID')
-                    ]) {
-                        withEnv([
-                            "ARM_CLIENT_ID=${TF_CLIENT_ID}",
-                            "ARM_CLIENT_SECRET=${TF_CLIENT_SECRET}",
-                            "ARM_TENANT_ID=${TF_TENANT_ID}",
-                            "ARM_SUBSCRIPTION_ID=${TF_SUBSCRIPTION_ID}"
-                        ]) {
-                            sh '''
-                                terraform init
-                                terraform plan -detailed-exitcode -out=tfplan
-                                if [ $? -eq 2 ]; then
-                                    echo "Changes detected"
-                                    terraform show -json tfplan > tfplan.json
-                                    echo true > changes.flag
-                                elif [ $? -eq 0 ]; then
-                                    echo "No changes"
-                                    echo false > changes.flag
-                                else
-                                    echo "Terraform plan failed"
-                                    exit 1
-                                fi
-                            '''
-                        }
-                    }
+    steps {
+        dir("${env.TERRAFORM_DIR}") {
+            withCredentials([
+                string(credentialsId: 'clientId', variable: 'TF_CLIENT_ID'),
+                string(credentialsId: 'clientSecret', variable: 'TF_CLIENT_SECRET'),
+                string(credentialsId: 'tenant_id', variable: 'TF_TENANT_ID'),
+                string(credentialsId: 'subscription_id', variable: 'TF_SUBSCRIPTION_ID')
+            ]) {
+                withEnv([
+                    "ARM_CLIENT_ID=${TF_CLIENT_ID}",
+                    "ARM_CLIENT_SECRET=${TF_CLIENT_SECRET}",
+                    "ARM_TENANT_ID=${TF_TENANT_ID}",
+                    "ARM_SUBSCRIPTION_ID=${TF_SUBSCRIPTION_ID}"
+                ]) {
+                    sh '''
+                        terraform init
+                        terraform plan -detailed-exitcode -out=tfplan
+                        exit_code=$?
+                        if [ $exit_code -eq 2 ]; then
+                            echo "Changes detected"
+                            terraform show -json tfplan > tfplan.json
+                            echo true > changes.flag
+                        elif [ $exit_code -eq 0 ]; then
+                            echo "No changes"
+                            echo false > changes.flag
+                        else
+                            echo "Terraform plan failed"
+                            exit 1
+                        fi
+                    '''
                 }
             }
         }
+    }
+}
+
 
         stage('Terraform Apply if Changes') {
             steps {
