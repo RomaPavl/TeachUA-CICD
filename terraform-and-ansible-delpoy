@@ -191,8 +191,8 @@ backend ansible_host=${env.BACKEND_IP} ansible_user=azureuser ansible_python_int
                     --private-key "$SSH_KEY" \
                     -e "postgres_admin_user=$PG_ADMIN_USER" \
                     -e "postgres_admin_password=$PG_ADMIN_PASS" \
-                    -e "app_db_name=$DB_NAME" \
-                    -e "app_db_password=$DB_PASS" \
+                    -e "db_name=$DB_NAME" \
+                    -e "db_password=$DB_PASS" \
                     -e "db_host=$DB_HOST"
             '''
         }
