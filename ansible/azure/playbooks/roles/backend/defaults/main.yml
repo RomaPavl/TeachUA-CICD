@@ -8,7 +8,7 @@ git_version: "main"
 
 # Docker image settings
 docker_image: rodriguez2711/backend-teachua
-docker_image_tag: 33
+docker_image_tag: latest
 container_name: backend-teachua
 
 # Docker network (same as frontend)
