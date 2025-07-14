@@ -145,42 +145,32 @@ backend ansible_host=${env.BACKEND_IP} ansible_user=azureuser ansible_python_int
                 }
             }
         }
-        stage('Setup Python Env') {
+       stage('Run Ansible Backend Playbook') {
     steps {
-        sh '''
-            rm -rf .venv
-            python3 -m venv .venv
-            . .venv/bin/activate
-            pip install --upgrade pip
-            pip install ansible azure-identity azure-mgmt-keyvault msrestazure
-        '''
-    }
-}
-        stage('Run Ansible Backend Playbook') {
-            steps {
-                withCredentials([
-                    sshUserPrivateKey(credentialsId: 'azure-ssh-key', keyFileVariable: 'SSH_KEY'),
-                    usernamePassword(credentialsId: 'docker-creds', usernameVariable: 'DOCKERHUB_USERNAME', passwordVariable: 'DOCKERHUB_PASSWORD')
-                ]) {
-                    withEnv([
-                        "AZURE_CLIENT_ID=${env.AZURE_CLIENT_ID}",
-                        "AZURE_CLIENT_SECRET=${env.AZURE_CLIENT_SECRET}",
-                        "AZURE_TENANT_ID=${env.AZURE_TENANT_ID}",
-                        "ANSIBLE_PYTHON_INTERPRETER=${env.WORKSPACE}/.venv/bin/python"
-                    ]) {
-                        sh """
-                            rm -rf .venv
-                            python3 -m venv .venv
-                            . .venv/bin/activate
-                            pip install --upgrade pip
-                            pip install ansible azure-identity azure-mgmt-keyvault msrestazure
-                            ansible-playbook -i ansible/azure/inventory/hosts.ini ansible/azure/playbooks/backend.yml --private-key "$SSH_KEY"
-                        """
-                    }
-                }
+        withCredentials([
+            sshUserPrivateKey(credentialsId: 'azure-ssh-key', keyFileVariable: 'SSH_KEY'),
+            usernamePassword(credentialsId: 'docker-creds', usernameVariable: 'DOCKERHUB_USERNAME', passwordVariable: 'DOCKERHUB_PASSWORD')
+        ]) {
+            withEnv([
+                "AZURE_CLIENT_ID=${env.AZURE_CLIENT_ID}",
+                "AZURE_CLIENT_SECRET=${env.AZURE_CLIENT_SECRET}",
+                "AZURE_TENANT_ID=${env.AZURE_TENANT_ID}",
+                "ANSIBLE_PYTHON_INTERPRETER=${env.WORKSPACE}/.venv/bin/python",
+                "PATH=${env.WORKSPACE}/.venv/bin:${env.PATH}",
+                "PYTHONPATH=${env.WORKSPACE}/.venv/lib/python3.12/site-packages"
+            ]) {
+                sh '''
+                    rm -rf .venv
+                    python3 -m venv .venv
+                    . .venv/bin/activate
+                    pip install --upgrade pip
+                    pip install ansible azure-identity azure-mgmt-keyvault msrestazure
+                    .venv/bin/ansible-playbook -i ansible/azure/inventory/hosts.ini ansible/azure/playbooks/backend.yml --private-key "$SSH_KEY"
+                '''
             }
         }
-
+    }
+}
         stage('Run Ansible Frontend Playbook') {
             steps {
                 withCredentials([
