@@ -135,10 +135,10 @@ pipeline {
                     script {
                         def inventoryContent = """
 [frontend]
-frontend ansible_host=${env.FRONTEND_IP} ansible_user=azureuser ansible_ssh_private_key_file=${SSH_KEY_PATH} ansible_python_interpreter=/usr/bin/python3 ansible_ssh_common_args='-o StrictHostKeyChecking=no'
+frontend ansible_host=${env.FRONTEND_IP} ansible_user=azureuser ansible_python_interpreter=/usr/bin/python3 ansible_ssh_common_args='-o StrictHostKeyChecking=no'
 
 [backend]
-backend ansible_host=${env.BACKEND_IP} ansible_user=azureuser ansible_ssh_private_key_file=${SSH_KEY_PATH} ansible_python_interpreter=/usr/bin/python3 ansible_ssh_common_args='-o StrictHostKeyChecking=no'
+backend ansible_host=${env.BACKEND_IP} ansible_user=azureuser ansible_python_interpreter=/usr/bin/python3 ansible_ssh_common_args='-o StrictHostKeyChecking=no'
 """
                         writeFile file: 'ansible/azure/inventory/hosts.ini', text: inventoryContent
                     }
@@ -149,7 +149,7 @@ backend ansible_host=${env.BACKEND_IP} ansible_user=azureuser ansible_ssh_privat
         stage('Run Ansible Backend Playbook') {
             steps {
                 withCredentials([
-                    sshUserPrivateKey(credentialsId: 'azure-ssh-key', keyFileVariable: 'SSH_KEY_PATH'),
+                    sshUserPrivateKey(credentialsId: 'azure-ssh-key', keyFileVariable: 'SSH_KEY'),
                     usernamePassword(credentialsId: 'docker-creds', usernameVariable: 'DOCKERHUB_USERNAME', passwordVariable: 'DOCKERHUB_PASSWORD')
                 ]) {
                     withEnv([
@@ -159,7 +159,7 @@ backend ansible_host=${env.BACKEND_IP} ansible_user=azureuser ansible_ssh_privat
                     ]) {
                         sh '''
                             . .venv/bin/activate
-                            ansible-playbook ansible/azure/playbooks/backend.yml -i ansible/azure/inventory/hosts.ini
+                            ansible-playbook ansible/azure/playbooks/backend.yml -i ansible/azure/inventory/hosts.ini --private-key "$SSH_KEY"
                         '''
                     }
                 }
@@ -169,7 +169,7 @@ backend ansible_host=${env.BACKEND_IP} ansible_user=azureuser ansible_ssh_privat
         stage('Run Ansible Frontend Playbook') {
             steps {
                 withCredentials([
-                    sshUserPrivateKey(credentialsId: 'azure-ssh-key', keyFileVariable: 'SSH_KEY_PATH'),
+                    sshUserPrivateKey(credentialsId: 'azure-ssh-key', keyFileVariable: 'SSH_KEY'),
                     usernamePassword(credentialsId: 'docker-creds', usernameVariable: 'DOCKERHUB_USERNAME', passwordVariable: 'DOCKERHUB_PASSWORD')
                 ]) {
                     withEnv([
@@ -181,7 +181,7 @@ backend ansible_host=${env.BACKEND_IP} ansible_user=azureuser ansible_ssh_privat
                             def backendHostPriv = env.BACKEND_PRIV
                             sh """
                                 source .venv/bin/activate
-                                ansible-playbook ansible/azure/playbooks/frontend.yml -i ansible/azure/inventory/hosts.ini -e backend_host=${backendHostPriv}
+                                ansible-playbook ansible/azure/playbooks/frontend.yml -i ansible/azure/inventory/hosts.ini -e backend_host=${backendHostPriv} --private-key "$SSH_KEY"
                             """
                         }
                     }
