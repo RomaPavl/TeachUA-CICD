@@ -160,7 +160,7 @@ backend ansible_host=${env.BACKEND_IP} ansible_user=azureuser ansible_python_int
                         sh """
                             pwd
                             ls -la .venv/bin/
-                            . .venv/bin/activate
+                            . /var/lib/jenkins/workspace/TeachUA-CICD-terraform-and-ansible/.venv/bin/activate
                             python -c "import azure.identity; print('azure-identity OK')"
                             ansible-playbook ansible/azure/playbooks/backend.yml -i ansible/azure/inventory/hosts.ini --private-key "$SSH_KEY"
                         """
@@ -183,7 +183,7 @@ backend ansible_host=${env.BACKEND_IP} ansible_user=azureuser ansible_python_int
                         script {
                             def backendHostPriv = env.BACKEND_PRIV
                             sh """
-                                . .venv/bin/activate
+                                . /var/lib/jenkins/workspace/TeachUA-CICD-terraform-and-ansible/.venv/bin/activate
                                 ansible-playbook ansible/azure/playbooks/frontend.yml -i ansible/azure/inventory/hosts.ini -e backend_host=${backendHostPriv} --private-key "$SSH_KEY"
                             """
                         }
