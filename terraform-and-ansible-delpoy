@@ -1,13 +1,19 @@
 pipeline {
-    agent any
-
+    agent {
+        docker {
+            image 'teachua-ci'
+            args '-u root'
+        }
+    }
     environment {
         TERRAFORM_DIR = './terraform/azure'
         INVENTORY_FILE = './ansible/inventory/hosts.ini'
         TFVARS_FILE = 'config.auto.tfvars.json'
         TFPLAN_JSON = './terraform/azure/tfplan.json'
     }
+
     stages {
+
         stage('Prepare tfvars with secrets') {
             steps {
                 withCredentials([
@@ -28,36 +34,35 @@ pipeline {
                     string(credentialsId: 'clientSecret', variable: 'TF_CLIENT_SECRET'),
                     string(credentialsId: 'tenant_id', variable: 'TF_TENANT_ID'),
                     string(credentialsId: 'subscription_id', variable: 'TF_SUBSCRIPTION_ID')
-        // додай інші секрети по потребі
-        ]) {
+                ]) {
                     script {
-                        // Створюємо JSON файл для tfvars
                         def tfvarsContent = """
-            {
-                "location": "${LOCATION}",
-                "resource_group_name": "${RESOURCE_GROUP}",
-                "admin_username": "${ADMIN_USERNAME}",
-                "ssh_public_key": "${SSH_PUB_KEY}",
-                "db_password": "${DB_PASSWORD}",
-                "frontend_name": "${FRONTEND_NAME}",
-                "backend_name": "${BACKEND_NAME}",
-                "monitoring_name": "${MONITORING_NAME}",
-                "key_vault_name": "${KEY_VAULT_NAME}",
-                "postgres_server_name": "${POSTGRES_SERVER_NAME}",
-                "postgres_db_name": "${POSTGRES_DB_NAME}",
-                "postgres_admin_user": "${POSTGRES_ADMIN_USER}",
-                "postgres_admin_password": "${POSTGRES_ADMIN_PASSWORD}",
-                "client_id": "${TF_CLIENT_ID}",
-                "client_secret": "${TF_CLIENT_SECRET}",
-                "tenant_id": "${TF_TENANT_ID}",
-                "subscription_id": "${TF_SUBSCRIPTION_ID}"
-            }
-            """
+{
+    "location": "${LOCATION}",
+    "resource_group_name": "${RESOURCE_GROUP}",
+    "admin_username": "${ADMIN_USERNAME}",
+    "ssh_public_key": "${SSH_PUB_KEY}",
+    "db_password": "${DB_PASSWORD}",
+    "frontend_name": "${FRONTEND_NAME}",
+    "backend_name": "${BACKEND_NAME}",
+    "monitoring_name": "${MONITORING_NAME}",
+    "key_vault_name": "${KEY_VAULT_NAME}",
+    "postgres_server_name": "${POSTGRES_SERVER_NAME}",
+    "postgres_db_name": "${POSTGRES_DB_NAME}",
+    "postgres_admin_user": "${POSTGRES_ADMIN_USER}",
+    "postgres_admin_password": "${POSTGRES_ADMIN_PASSWORD}",
+    "client_id": "${TF_CLIENT_ID}",
+    "client_secret": "${TF_CLIENT_SECRET}",
+    "tenant_id": "${TF_TENANT_ID}",
+    "subscription_id": "${TF_SUBSCRIPTION_ID}"
+}
+"""
                         writeFile file: "${env.TERRAFORM_DIR}/config.auto.tfvars.json", text: tfvarsContent
                     }
-        }
+                }
             }
         }
+
         stage('Terraform Init & Plan') {
             steps {
                 dir("${env.TERRAFORM_DIR}") {
@@ -68,53 +73,55 @@ pipeline {
                         string(credentialsId: 'subscription_id', variable: 'TF_SUBSCRIPTION_ID')
                     ]) {
                         withEnv([
-                        "ARM_CLIENT_ID=${TF_CLIENT_ID}",
-                        "ARM_CLIENT_SECRET=${TF_CLIENT_SECRET}",
-                        "ARM_TENANT_ID=${TF_TENANT_ID}",
-                        "ARM_SUBSCRIPTION_ID=${TF_SUBSCRIPTION_ID}"
+                            "ARM_CLIENT_ID=${TF_CLIENT_ID}",
+                            "ARM_CLIENT_SECRET=${TF_CLIENT_SECRET}",
+                            "ARM_TENANT_ID=${TF_TENANT_ID}",
+                            "ARM_SUBSCRIPTION_ID=${TF_SUBSCRIPTION_ID}"
                         ]) {
-                            bat '''
-                        terraform init
-                        terraform plan -detailed-exitcode -out=tfplan
-                        IF %ERRORLEVEL% EQU 2 (
-                            echo "Changes detected"
-                            terraform show -json tfplan > tfplan.json
-                            echo true > changes.flag
-                        ) ELSE IF %ERRORLEVEL% EQU 0 (
-                            echo "No changes"
-                            echo false > changes.flag
-                        ) ELSE (
-                            echo "Terraform plan failed"
-                            exit /b %ERRORLEVEL%
-                        )
-                    '''
+                            sh '''
+                                terraform init
+                                terraform plan -detailed-exitcode -out=tfplan
+                                if [ $? -eq 2 ]; then
+                                    echo "Changes detected"
+                                    terraform show -json tfplan > tfplan.json
+                                    echo true > changes.flag
+                                elif [ $? -eq 0 ]; then
+                                    echo "No changes"
+                                    echo false > changes.flag
+                                else
+                                    echo "Terraform plan failed"
+                                    exit 1
+                                fi
+                            '''
                         }
                     }
                 }
             }
         }
+
         stage('Terraform Apply if Changes') {
             steps {
                 script {
                     def hasChanges = readFile("${env.TERRAFORM_DIR}/changes.flag").trim()
                     if (hasChanges == 'true') {
                         echo 'Changes detected'
-                        bat "cd ${env.TERRAFORM_DIR} && terraform apply -auto-approve tfplan"
+                        sh "cd ${env.TERRAFORM_DIR} && terraform apply -auto-approve tfplan"
                     } else {
-                        echo 'Changes are not detected'
+                        echo 'No changes'
                     }
                 }
             }
         }
+
         stage('Extract Terraform Outputs') {
             steps {
                 script {
-                    bat "cd ${env.TERRAFORM_DIR} && terraform output -json > outputs.json"
+                    sh "cd ${env.TERRAFORM_DIR} && terraform output -json > outputs.json"
                     def tfOutput = readJSON file: "${env.TERRAFORM_DIR}/outputs.json"
 
                     env.FRONTEND_IP   = tfOutput.public_ips.value.frontend
                     env.BACKEND_IP    = tfOutput.public_ips.value.backend
-                    env.BACKEND_PRIV  = tfOutput.private_ips.value.backend  
+                    env.BACKEND_PRIV  = tfOutput.private_ips.value.backend
                 }
             }
         }
@@ -125,71 +132,60 @@ pipeline {
                     script {
                         def inventoryContent = """
 [frontend]
-frontend ansible_host=${env.FRONTEND_IP} ansible_user=azureuser ansible_ssh_private_key_file=~/.ssh/id_rsa ansible_python_interpreter=/usr/bin/python3 ansible_ssh_common_args='-o StrictHostKeyChecking=no'
+frontend ansible_host=${env.FRONTEND_IP} ansible_user=azureuser ansible_ssh_private_key_file=${SSH_KEY_PATH} ansible_python_interpreter=/usr/bin/python3 ansible_ssh_common_args='-o StrictHostKeyChecking=no'
 
 [backend]
-backend ansible_host=${env.BACKEND_IP} ansible_user=azureuser ansible_ssh_private_key_file=~/.ssh/id_rsa ansible_python_interpreter=/usr/bin/python3 ansible_ssh_common_args='-o StrictHostKeyChecking=no'
+backend ansible_host=${env.BACKEND_IP} ansible_user=azureuser ansible_ssh_private_key_file=${SSH_KEY_PATH} ansible_python_interpreter=/usr/bin/python3 ansible_ssh_common_args='-o StrictHostKeyChecking=no'
 """
                         writeFile file: 'ansible/azure/inventory/hosts.ini', text: inventoryContent
                     }
                 }
             }
         }
-        stage('Test WSL') {
-      steps {
-        script {
-          bat 'wsl -u romko whoami'
-        }
-      }
-    }
+
         stage('Run Ansible Backend Playbook') {
             steps {
                 withCredentials([
                     sshUserPrivateKey(credentialsId: 'azure-ssh-key', keyFileVariable: 'SSH_KEY'),
                     usernamePassword(credentialsId: 'docker-creds', usernameVariable: 'DOCKERHUB_USERNAME', passwordVariable: 'DOCKERHUB_PASSWORD')
-                    ] ) { 
+                ]) {
                     withEnv([
                         "AZURE_CLIENT_ID=${env.AZURE_CLIENT_ID}",
                         "AZURE_CLIENT_SECRET=${env.AZURE_CLIENT_SECRET}",
                         "AZURE_TENANT_ID=${env.AZURE_TENANT_ID}"
                     ]) {
-                    script {
-                        def wslWorkspacePath = "${env.WORKSPACE}".replace('C:', '/mnt/c').replaceAll('\\\\', '/')
-                        def ansibleDir = "${wslWorkspacePath}/ansible/azure/"
-                        def sshKeyPathWsl = "${SSH_KEY}".replace('C:', '/mnt/c').replaceAll('\\\\', '/')
-                        // Backend
-                        bat """
-            wsl bash -c " cd /home/romko &&  DOCKERHUB_USERNAME='${DOCKERHUB_USERNAME}' DOCKERHUB_PASSWORD='${DOCKERHUB_PASSWORD}' bash -c 'source .venv/bin/activate && ansible-playbook ${ansibleDir}/playbooks/backend.yml -i ${ansibleDir}/inventory/hosts.ini'"
-        """
+                        sh '''
+                            python3 -m venv .venv
+                            source .venv/bin/activate
+                            pip install -r requirements.txt || true
+                            ansible-playbook ansible/azure/playbooks/backend.yml -i ansible/azure/inventory/hosts.ini
+                        '''
                     }
                 }
             }
         }
-    }
-       stage('Run Ansible Frontend Playbook') {
+
+        stage('Run Ansible Frontend Playbook') {
             steps {
                 withCredentials([
                     sshUserPrivateKey(credentialsId: 'azure-ssh-key', keyFileVariable: 'SSH_KEY'),
                     usernamePassword(credentialsId: 'docker-creds', usernameVariable: 'DOCKERHUB_USERNAME', passwordVariable: 'DOCKERHUB_PASSWORD')
-                    ]) {
-                     withEnv([
+                ]) {
+                    withEnv([
                         "AZURE_CLIENT_ID=${env.AZURE_CLIENT_ID}",
                         "AZURE_CLIENT_SECRET=${env.AZURE_CLIENT_SECRET}",
                         "AZURE_TENANT_ID=${env.AZURE_TENANT_ID}"
-                    ]) { 
-                    script {
-                        def wslWorkspacePath = "${env.WORKSPACE}".replace('C:', '/mnt/c').replaceAll('\\\\', '/')
-                        def ansibleDir = "${wslWorkspacePath}/ansible/azure/"
-                        def backendHostPriv = env.BACKEND_PRIV
-                        def sshKeyPathWsl = "${SSH_KEY}".replace('C:', '/mnt/c').replaceAll('\\\\', '/')
-                        // Frontend (з передачею backend_host=приватна IP бекенда)
-                        bat """
-            wsl bash -c "cd /home/romko && DOCKERHUB_USERNAME='${DOCKERHUB_USERNAME}' DOCKERHUB_PASSWORD='${DOCKERHUB_PASSWORD}' bash -c 'source .venv/bin/activate && ansible-playbook ${ansibleDir}/playbooks/frontend.yml -i ${ansibleDir}/inventory/hosts.ini  -e 'backend_host=${backendHostPriv}''"
-        """
+                    ]) {
+                        script {
+                            def backendHostPriv = env.BACKEND_PRIV
+                            sh """
+                                source .venv/bin/activate
+                                ansible-playbook ansible/azure/playbooks/frontend.yml -i ansible/azure/inventory/hosts.ini -e backend_host=${backendHostPriv}
+                            """
+                        }
                     }
                 }
             }
         }
     }
-}
 }
