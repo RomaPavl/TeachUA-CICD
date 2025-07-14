@@ -171,7 +171,7 @@ backend ansible_host=${env.BACKEND_IP} ansible_user=azureuser ansible_python_int
                             . .venv/bin/activate
                             which python
                             python --version
-                            ansible-playbook -i ansible/azure/inventory/hosts.ini ansible/azure/playbooks/backend.yml --private-key "$SSH_KEY"
+                            ansible-playbook -i ansible/azure/inventory/hosts.ini ansible/azure/playbooks/backend.yml -e ansible_python_interpreter=.venv/bin/python --private-key "$SSH_KEY"
                         """
                     }
                 }
@@ -192,7 +192,7 @@ backend ansible_host=${env.BACKEND_IP} ansible_user=azureuser ansible_python_int
                         script {
                             def backendHostPriv = env.BACKEND_PRIV
                             sh """
-                                 .venv/bin/ansible-playbook -i ansible/azure/inventory/hosts.ini ansible/azure/playbooks/frontend.yml --private-key "$SSH_KEY"
+                                 .venv/bin/ansible-playbook -i ansible/azure/inventory/hosts.ini ansible/azure/playbooks/frontend.yml -e ansible_python_interpreter=.venv/bin/python --private-key "$SSH_KEY"
                             """
                         }
                     }
