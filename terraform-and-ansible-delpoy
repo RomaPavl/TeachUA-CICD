@@ -169,7 +169,11 @@ backend ansible_host=${env.BACKEND_IP} ansible_user=azureuser ansible_python_int
                         "ANSIBLE_PYTHON_INTERPRETER=${env.WORKSPACE}/.venv/bin/python"
                     ]) {
                         sh """
+                            rm -rf .venv
+                            python3 -m venv .venv
                             . .venv/bin/activate
+                            pip install --upgrade pip
+                            pip install ansible azure-identity azure-mgmt-keyvault msrestazure
                             ansible-playbook -i ansible/azure/inventory/hosts.ini ansible/azure/playbooks/backend.yml --private-key "$SSH_KEY"
                         """
                     }
