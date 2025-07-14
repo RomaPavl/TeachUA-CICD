@@ -152,7 +152,7 @@ backend ansible_host=${env.BACKEND_IP} ansible_user=azureuser ansible_python_int
             python3 -m venv .venv
             . .venv/bin/activate
             pip install --upgrade pip
-            pip install ansible azure-identity azure-mgmt-keyvault
+            pip install ansible azure-identity azure-mgmt-keyvault msrestazure
         '''
     }
 }
