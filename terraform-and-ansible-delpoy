@@ -75,9 +75,11 @@ pipeline {
                     "ARM_SUBSCRIPTION_ID=${TF_SUBSCRIPTION_ID}"
                 ]) {
                     sh '''
+                        set +e
                         terraform init
                         terraform plan -detailed-exitcode -out=tfplan
                         exit_code=$?
+
                         if [ $exit_code -eq 2 ]; then
                             echo "Changes detected"
                             terraform show -json tfplan > tfplan.json
@@ -87,14 +89,17 @@ pipeline {
                             echo false > changes.flag
                         else
                             echo "Terraform plan failed"
-                            exit 1
+                            exit $exit_code
                         fi
+
+                        exit 0
                     '''
                 }
             }
         }
     }
 }
+
 
 
         stage('Terraform Apply if Changes') {
