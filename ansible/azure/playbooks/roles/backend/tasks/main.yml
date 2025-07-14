@@ -30,7 +30,15 @@
     state: present
     update_cache: yes
   become: true
-
+  
+- name: Load secrets from Azure Key Vault
+  set_fact:
+    postgres_admin_user: "{{ lookup('azure.azcollection.azure_keyvault_secret', 'pgadmin', vault_url='https://roma-kv-dev3.vault.azure.net', auth_source='environment') }}"
+    postgres_admin_password: "{{ lookup('azure.azcollection.azure_keyvault_secret', 'pg-pass', vault_url='https://roma-kv-dev3.vault.azure.net', auth_source='environment') }}"
+    db_name: "{{ lookup('azure.azcollection.azure_keyvault_secret', 'db-name', vault_url='https://roma-kv-dev3.vault.azure.net', auth_source='environment') }}"
+    db_password: "{{ lookup('azure.azcollection.azure_keyvault_secret', 'db-password', vault_url='https://roma-kv-dev3.vault.azure.net', auth_source='environment') }}"
+    db_host: "{{ lookup('azure.azcollection.azure_keyvault_secret', 'db-host', vault_url='https://roma-kv-dev3.vault.azure.net', auth_source='environment') }}"
+    
 - name: Create Docker network for service discovery
   community.docker.docker_network:
     name: "{{ network_name }}"
@@ -50,34 +58,34 @@
 
 - name: Create application database user
   community.postgresql.postgresql_user:
-    login_host: "{{ postgres_host }}"
-    login_port: "{{ postgres_port }}"
+    login_host: "{{ db_host }}"
+    login_port: "5432"
     login_user: "{{ postgres_admin_user }}"
     login_password: "{{ postgres_admin_password }}"
     login_db: "postgres"
     ssl_mode: require
-    name: "{{ app_db_user }}"
-    password: "{{ app_db_password }}"
+    name: "pmp2025"
+    password: "{{ db_password }}"
     encrypted: yes
     state: present
 
 - name: Create application database
   community.postgresql.postgresql_db:
-    login_host: "{{ postgres_host }}"
-    login_port: "{{ postgres_port }}"
+    login_host: "{{ db_host }}"
+    login_port: "5432"
     login_user: "{{ postgres_admin_user }}"
     login_password: "{{ postgres_admin_password }}"
     maintenance_db: "postgres"
     ssl_mode: require
-    name: "{{ app_db_name }}"
+    name: "teachua"
     state: present
 
 - name: Restore database from dump
   shell: |
     PGPASSWORD="{{ postgres_admin_password }}" \
-    psql "host={{ postgres_host }} \
-          port={{ postgres_port }} \
-          dbname={{ app_db_name }} \
+    psql "host={{ db_host }} \
+          port=5432 \
+          dbname={{ db_name }} \
           user={{ postgres_admin_user }} \
           sslmode=require" \
        < /tmp/{{ dump_file }}
