@@ -133,17 +133,27 @@ pipeline {
                 bat "docker login -u ${DOCKERHUB_CREDENTIALS_USR} -p ${DOCKERHUB_CREDENTIALS_PSW}"
             }
         }
-        stage('Push Backend Image') {
+        stage("Tag backend image as latest") {
             steps {
-                bat "docker push ${BACKEND_IMAGE}"
+                bat "docker tag ${BACKEND_IMAGE} ${DOCKERHUB_CREDENTIALS_USR}/backend-teachua:latest"
+            }
+        }
+        stage("Push backend latest tag") {
+            steps {
+                bat "docker push ${DOCKERHUB_CREDENTIALS_USR}/backend-teachua:latest"
             }
         }
         
-        stage('Push Frontend Image') {
+        stage("Tag frontend image as latest") {
             steps {
-                bat "docker push ${FRONTEND_IMAGE}"
+                bat "docker tag ${FRONTEND_IMAGE} ${DOCKERHUB_CREDENTIALS_USR}/frontend-teachua:latest"
             }
-        } 
+        }
+        stage("Push frontend latest tag") {
+            steps {
+                bat "docker push ${DOCKERHUB_CREDENTIALS_USR}/frontend-teachua:latest"
+            }
+        }
     }
     post {
         success {
