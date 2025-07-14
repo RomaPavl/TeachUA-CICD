@@ -135,10 +135,10 @@ pipeline {
                     script {
                         def inventoryContent = """
 [frontend]
-frontend ansible_host=${env.FRONTEND_IP} ansible_user=azureuser ansible_python_interpreter=/var/lib/jenkins/workspace/TeachUA-CICD-terraform-and-ansible/.venv/bin/python ansible_ssh_common_args='-o StrictHostKeyChecking=no'
+frontend ansible_host=${env.FRONTEND_IP} ansible_user=azureuser ansible_python_interpreter=/usr/bin/python3 ansible_ssh_common_args='-o StrictHostKeyChecking=no'
 
 [backend]
-backend ansible_host=${env.BACKEND_IP} ansible_user=azureuser ansible_python_interpreter=/var/lib/jenkins/workspace/TeachUA-CICD-terraform-and-ansible/.venv/bin/python ansible_ssh_common_args='-o StrictHostKeyChecking=no'
+backend ansible_host=${env.BACKEND_IP} ansible_user=azureuser ansible_python_interpreter=/usr/bin/python3 ansible_ssh_common_args='-o StrictHostKeyChecking=no'
 """
                         writeFile file: 'ansible/azure/inventory/hosts.ini', text: inventoryContent
                     }
