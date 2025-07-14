@@ -1,6 +1,8 @@
 - name: Retrieve secrets from Azure Key Vault (locally)
   hosts: localhost
   gather_facts: false
+  vars:
+    ansible_python_interpreter: "{{ lookup('env', 'ANSIBLE_PYTHON_INTERPRETER') }}"
   tasks:
     - name: Load secrets from Azure Key Vault
       set_fact:
