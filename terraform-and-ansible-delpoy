@@ -149,7 +149,7 @@ backend ansible_host=${env.BACKEND_IP} ansible_user=azureuser ansible_ssh_privat
         stage('Run Ansible Backend Playbook') {
             steps {
                 withCredentials([
-                    sshUserPrivateKey(credentialsId: 'azure-ssh-key', keyFileVariable: 'SSH_KEY'),
+                    sshUserPrivateKey(credentialsId: 'azure-ssh-key', keyFileVariable: 'SSH_KEY_PATH'),
                     usernamePassword(credentialsId: 'docker-creds', usernameVariable: 'DOCKERHUB_USERNAME', passwordVariable: 'DOCKERHUB_PASSWORD')
                 ]) {
                     withEnv([
@@ -169,7 +169,7 @@ backend ansible_host=${env.BACKEND_IP} ansible_user=azureuser ansible_ssh_privat
         stage('Run Ansible Frontend Playbook') {
             steps {
                 withCredentials([
-                    sshUserPrivateKey(credentialsId: 'azure-ssh-key', keyFileVariable: 'SSH_KEY'),
+                    sshUserPrivateKey(credentialsId: 'azure-ssh-key', keyFileVariable: 'SSH_KEY_PATH'),
                     usernamePassword(credentialsId: 'docker-creds', usernameVariable: 'DOCKERHUB_USERNAME', passwordVariable: 'DOCKERHUB_PASSWORD')
                 ]) {
                     withEnv([
