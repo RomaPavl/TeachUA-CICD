@@ -171,6 +171,9 @@ backend ansible_host=${env.BACKEND_IP} ansible_user=azureuser ansible_python_int
                             . .venv/bin/activate
                             which python
                             python --version
+                            python -c "from azure.identity import DefaultAzureCredential; print(DefaultAzureCredential)"
+                            ansible --version
+                            ansible localhost -m debug -a 'msg="Test"'
                             ansible-playbook -i ansible/azure/inventory/hosts.ini ansible/azure/playbooks/backend.yml --private-key "$SSH_KEY"
                         """
                     }
