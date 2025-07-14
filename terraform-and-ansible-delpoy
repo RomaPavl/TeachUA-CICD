@@ -148,10 +148,10 @@ backend ansible_host=${env.BACKEND_IP} ansible_user=azureuser ansible_python_int
        stage('Extract secrets from Azure Key Vault') {
     steps {
         withCredentials([
-            string(credentialsId: 'AZURE_CLIENT_ID', variable: 'AZURE_CLIENT_ID'),
-            string(credentialsId: 'AZURE_CLIENT_SECRET', variable: 'AZURE_CLIENT_SECRET'),
-            string(credentialsId: 'AZURE_TENANT_ID', variable: 'AZURE_TENANT_ID'),
-            string(credentialsId: 'AZURE_SUBSCRIPTION_ID', variable: 'AZURE_SUBSCRIPTION_ID')
+            string(credentialsId: 'clientId', variable: 'AZURE_CLIENT_ID'),
+            string(credentialsId: 'clientSecret', variable: 'AZURE_CLIENT_SECRET'),
+            string(credentialsId: 'tenant_id', variable: 'AZURE_TENANT_ID'),
+            string(credentialsId: 'subscription_id', variable: 'AZURE_SUBSCRIPTION_ID')
         ]) {
             withEnv([
                 "AZURE_CLIENT_ID=${AZURE_CLIENT_ID}",
