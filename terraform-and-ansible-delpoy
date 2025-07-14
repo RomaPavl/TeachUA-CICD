@@ -164,7 +164,8 @@ backend ansible_host=${env.BACKEND_IP} ansible_user=azureuser ansible_python_int
                     python3 -m venv .venv
                     . .venv/bin/activate
                     pip install --upgrade pip
-                    pip install ansible azure-identity azure-mgmt-keyvault msrestazure
+                    pip install ansible azure-identity azure-mgmt-keyvault msrestazure ansible
+                    ansible-galaxy collection install azure.azcollection --upgrade
                     .venv/bin/ansible-playbook -i ansible/azure/inventory/hosts.ini ansible/azure/playbooks/backend.yml --private-key "$SSH_KEY"
                 '''
             }
