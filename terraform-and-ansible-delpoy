@@ -1,9 +1,6 @@
 pipeline {
     agent {
-        docker {
-            image 'teachua-ci'
-            args '-u root'
-        }
+        any
     }
     environment {
         TERRAFORM_DIR = './terraform/azure'
