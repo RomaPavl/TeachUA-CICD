@@ -5,7 +5,7 @@
   vars:
     # override these if needed
     docker_image: "rodriguez2711/frontend-teachua"
-    docker_image_tag: "36"
+    docker_image_tag: "latest"
     container_name: "frontend-teachua"
     network_name: "teachua_net"
     backend_host: "10.0.1.5"
