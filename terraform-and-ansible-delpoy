@@ -158,7 +158,10 @@ backend ansible_host=${env.BACKEND_IP} ansible_user=azureuser ansible_python_int
                         "AZURE_TENANT_ID=${env.AZURE_TENANT_ID}"
                     ]) {
                         sh """
+                            pwd
+                            ls -la .venv/bin/
                             . .venv/bin/activate
+                            python -c "import azure.identity; print('azure-identity OK')"
                             ansible-playbook ansible/azure/playbooks/backend.yml -i ansible/azure/inventory/hosts.ini --private-key "$SSH_KEY"
                         """
                     }
