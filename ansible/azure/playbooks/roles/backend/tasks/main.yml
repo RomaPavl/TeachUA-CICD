@@ -59,12 +59,12 @@
 - name: Create application database user
   community.postgresql.postgresql_user:
     login_host: "{{ db_host }}"
-    login_port: "5432"
+    login_port: "{{ db_port }}"
     login_user: "{{ postgres_admin_user }}"
     login_password: "{{ postgres_admin_password }}"
     login_db: "postgres"
     ssl_mode: require
-    name: "pmp2025"
+    name: "{{ db_user }}"
     password: "{{ db_password }}"
     encrypted: yes
     state: present
@@ -72,12 +72,12 @@
 - name: Create application database
   community.postgresql.postgresql_db:
     login_host: "{{ db_host }}"
-    login_port: "5432"
+    login_port: "{{ db_port }}"
     login_user: "{{ postgres_admin_user }}"
     login_password: "{{ postgres_admin_password }}"
     maintenance_db: "postgres"
     ssl_mode: require
-    name: "teachua"
+    name: "{{ db_name }}"
     state: present
 
 - name: Restore database from dump
