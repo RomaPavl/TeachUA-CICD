@@ -21,4 +21,3 @@
         postgres_admin_password: "{{ postgres_admin_password }}"
         db_host: "{{ db_host }}"
         db_port: "{{ db_port }}"
-        dump_file: "{{ dump_file }}"
