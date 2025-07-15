@@ -157,6 +157,9 @@ backend ansible_host=${env.BACKEND_IP} ansible_user=azureuser ansible_python_int
 ]) {
     sh """
         . .venv/bin/activate
+        which python
+        python --version
+        pip list | grep azure
         ansible-playbook ansible/azure/playbooks/backend.yml \
             -i ansible/azure/inventory/hosts.ini \
             --private-key "$SSH_KEY" \
