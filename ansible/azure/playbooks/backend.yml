@@ -8,73 +8,13 @@
     packages:
       - postgresql-client
       - python3-psycopg2
-    params:
-      vault_url: 'https://roma-kv-dev3.vault.azure.net'
-      client_id: "{{ azure_client_id }}"
-      secret: "{{ azure_client_secret }}"
-      tenant: "{{ azure_tenant_id }}"
-    
-  pre_tasks:
-  - name: Get secret pgadmin from Azure Key Vault
-    azure.azcollection.azure_rm_keyvaultsecret_info:
-      name: pgadmin
-      vault_uri: "{{ params.vault_url }}"
-      client_id: "{{ params.client_id }}"
-      secret: "{{ params.secret }}"
-      tenant: "{{ params.tenant }}"
-    register: pgadmin_secret
-
-  - name: Get pg-pass from Azure Key Vault
-    azure.azcollection.azure_rm_keyvaultsecret_info:
-      name: pg-pass
-      vault_uri: "{{ params.vault_url }}"
-      client_id: "{{ params.client_id }}"
-      secret: "{{ params.secret }}"
-      tenant: "{{ params.tenant }}"
-    register: pg_pass_secret
-
-  - name: Get db-name from Azure Key Vault
-    azure.azcollection.azure_rm_keyvaultsecret_info:
-      name: db-name
-      vault_uri: "{{ params.vault_url }}"
-      client_id: "{{ params.client_id }}"
-      secret: "{{ params.secret }}"
-      tenant: "{{ params.tenant }}"
-    register: db_name_secret
-
-  - name: Get db-password from Azure Key Vault
-    azure.azcollection.azure_rm_keyvaultsecret_info:
-      name: db-password
-      vault_uri: "{{ params.vault_url }}"
-      client_id: "{{ params.client_id }}"
-      secret: "{{ params.secret }}"
-      tenant: "{{ params.tenant }}"
-    register: db_password_secret
-
-  - name: Get db-host from Azure Key Vault
-    azure.azcollection.azure_rm_keyvaultsecret_info:
-      name: db-host
-      vault_uri: "{{ params.vault_url }}"
-      client_id: "{{ params.client_id }}"
-      secret: "{{ params.secret }}"
-      tenant: "{{ params.tenant }}"
-    register: db_host_secret
-
-  - name: Set all fetched secrets
-    set_fact:
-      postgres_admin_user: "{{ pgadmin_secret.value }}"
-      postgres_admin_password: "{{ pg_pass_secret.value }}"
-      db_name: "{{ db_name_secret.value }}"
-      db_password: "{{ db_password_secret.value }}"
-      db_host: "{{ db_host_secret.value }}"
-
   roles:
     - role: backend
       vars:
-        db_host: "{{ db_host }}"
-        db_port: "{{ db_port }}"
-        postgres_admin_user: "{{ postgres_admin_user }}"
-        postgres_admin_password: "{{ postgres_admin_password }}"
         db_name: "{{ db_name }}"
         db_user: "{{ db_user }}"
         db_password: "{{ db_password }}"
+        client_id: "{{ azure_client_id }}"
+        secret: "{{ azure_client_secret }}"
+        tenant: "{{ azure_tenant_id }}"
+        vault_url: "https://roma-kv-dev3.vault.azure.net"
