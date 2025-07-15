@@ -189,3 +189,4 @@ backend ansible_host=${env.BACKEND_IP} ansible_user=azureuser ansible_python_int
         }
     }
 }
+}
