@@ -158,9 +158,12 @@ backend ansible_host=${env.BACKEND_IP} ansible_user=azureuser ansible_python_int
     usernamePassword(credentialsId: 'docker-creds', usernameVariable: 'DOCKERHUB_USERNAME', passwordVariable: 'DOCKERHUB_PASSWORD'),
     string(credentialsId: 'clientId', variable: 'AZURE_CLIENT_ID'),
     string(credentialsId: 'clientSecret', variable: 'AZURE_CLIENT_SECRET'),
-    string(credentialsId: 'tenant_id', variable: 'AZURE_TENANT_ID')
+    string(credentialsId: 'tenant_id', variable: 'AZURE_TENANT_ID'),
+    file(credentialsId: 'teachua-dump', variable: 'DUMP_FILE')
 ]) {
     sh """
+        mkdir -p ansible/files
+        cp "$DUMP_FILE" ansible/files/teachua_full_dump.sql
         ansible-playbook ansible/azure/playbooks/backend.yml \
         -i ansible/azure/inventory/hosts.ini \
         --private-key "$SSH_KEY" \
@@ -178,7 +181,6 @@ backend ansible_host=${env.BACKEND_IP} ansible_user=azureuser ansible_python_int
                 withCredentials([
                     sshUserPrivateKey(credentialsId: 'azure-ssh-key', keyFileVariable: 'SSH_KEY'),
                     usernamePassword(credentialsId: 'docker-creds', usernameVariable: 'DOCKERHUB_USERNAME', passwordVariable: 'DOCKERHUB_PASSWORD'),
-                    file(credentialsId: 'teachua-dump', variable: 'DUMP_FILE')
                 ]) {
                     withEnv([
                         "AZURE_CLIENT_ID=${env.AZURE_CLIENT_ID}",
@@ -186,8 +188,6 @@ backend ansible_host=${env.BACKEND_IP} ansible_user=azureuser ansible_python_int
                         "AZURE_TENANT_ID=${env.AZURE_TENANT_ID}"
                     ]) {
                             sh """
-                                mkdir -p ansible/files
-                                cp "$DUMP_FILE" ansible/files/teachua_full_dump.sql
                                 ansible-playbook -i ansible/azure/inventory/hosts.ini \
                                 ansible/azure/playbooks/frontend.yml \
                                 --private-key '${SSH_KEY}' \
