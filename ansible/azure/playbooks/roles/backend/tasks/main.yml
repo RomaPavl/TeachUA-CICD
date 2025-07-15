@@ -42,6 +42,7 @@
       - azure-mgmt-resource
       - azure-mgmt-authorization
       - msrestazure
+      - azure-cli
     executable: pip3
   become: true
 
