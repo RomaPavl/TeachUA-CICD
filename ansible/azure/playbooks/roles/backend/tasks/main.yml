@@ -33,9 +33,19 @@
   
 - name: Install Azure SDK and mgmt dependencies
   pip:
-    name: 
-     - ansible[azure]
-     - azure-storage-blob 
+    name:
+      - ansible[azure]
+      - azure-storage-blob
+      - azure-mgmt-automation
+      - azure-mgmt-network
+      - azure-mgmt-keyvault
+      - azure-mgmt-resource
+      - azure-mgmt-authorization
+      - msrestazure
+      - azure-identity
+      - msal
+      - msal-extensions
+      - azure-core
     executable: pip3
   become: true
 
