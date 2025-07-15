@@ -9,6 +9,7 @@
     app_db_host: "{{ db_host }}"
     app_db_port: 5432
     dump_file: teachua_full_dump.sql
+    db_name: "teachua"
     packages:
       - postgresql-client
       - python3-psycopg2
