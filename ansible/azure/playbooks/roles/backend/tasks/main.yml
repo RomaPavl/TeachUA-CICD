@@ -41,6 +41,10 @@
       - azure-mgmt-keyvault
       - azure-mgmt-resource
       - azure-mgmt-authorization
+      - azure-mgmt-network
+      - azure-mgmt-compute
+      - azure-mgmt-storage
+      - azure-mgmt-containerregistry
       - msrestazure
       - azure-cli
     executable: pip3
