@@ -9,7 +9,7 @@
       - postgresql-client
       - python3-psycopg2
     params:
-      vault_url: "https://roma-kv-dev3.vault.azure.net"
+      vault_url: "https://roma-kv-dev3.vault.azure.net/"
       client_id: "{{ azure_client_id }}"
       secret: "{{ azure_client_secret }}"
       tenant: "{{ azure_tenant_id }}"
