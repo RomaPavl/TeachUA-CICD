@@ -157,10 +157,10 @@ backend ansible_host=${env.BACKEND_IP} ansible_user=azureuser ansible_python_int
 ]) {
     sh """
         . .venv/bin/activate
-        /var/lib/jenkins/workspace/TeachUA-CICD-terraform-and-ansible/.venv/bin/ansible-playbook ansible/azure/playbooks/backend.yml \
-       -i ansible/azure/inventory/hosts.ini \
-       --private-key "$SSH_KEY" \
-       -e "azure_client_id=$AZURE_CLIENT_ID azure_client_secret=$AZURE_CLIENT_SECRET azure_tenant_id=$AZURE_TENANT_ID"
+        ansible-playbook ansible/azure/playbooks/backend.yml \
+        -i ansible/azure/inventory/hosts.ini \
+        --private-key "$SSH_KEY" \
+        -e "azure_client_id=$AZURE_CLIENT_ID azure_client_secret=$AZURE_CLIENT_SECRET azure_tenant_id=$AZURE_TENANT_ID"
     """
 }
 }
