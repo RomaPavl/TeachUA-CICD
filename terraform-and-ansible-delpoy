@@ -129,7 +129,7 @@ pipeline {
                     env.FRONTEND_IP   = tfOutput.public_ips.value.frontend
                     env.BACKEND_IP    = tfOutput.public_ips.value.backend
                     env.BACKEND_PRIV  = tfOutput.private_ips.value.backend
-                    env.DB_HOST       = tfOutput.private_ips.value.backend
+                    env.DB_HOST       = tfOutput.db_host.value
                 }
             }
         }
