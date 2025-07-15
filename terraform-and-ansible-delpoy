@@ -151,9 +151,9 @@ backend ansible_host=${env.BACKEND_IP} ansible_user=azureuser ansible_python_int
         withCredentials([
     sshUserPrivateKey(credentialsId: 'azure-ssh-key', keyFileVariable: 'SSH_KEY'),
     usernamePassword(credentialsId: 'docker-creds', usernameVariable: 'DOCKERHUB_USERNAME', passwordVariable: 'DOCKERHUB_PASSWORD'),
-    string(credentialsId: 'client-id', variable: 'AZURE_CLIENT_ID'),
-    string(credentialsId: 'client-secret', variable: 'AZURE_CLIENT_SECRET'),
-    string(credentialsId: 'tenant-id', variable: 'AZURE_TENANT_ID')
+    string(credentialsId: 'clientId', variable: 'AZURE_CLIENT_ID'),
+    string(credentialsId: 'clientSecret', variable: 'AZURE_CLIENT_SECRET'),
+    string(credentialsId: 'tenant_id', variable: 'AZURE_TENANT_ID')
 ]) {
     sh """
         . .venv/bin/activate
