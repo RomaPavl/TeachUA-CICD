@@ -21,11 +21,11 @@
         
     - name: Load secrets from Azure Key Vault
       set_fact:
-    postgres_admin_user: "{{ lookup('azure.azcollection.azure_keyvault_secret', 'pgadmin', vault_url=params.vault_url, client_id=params.client_id, secret=params.secret, tenant=params.tenant) }}"
-    postgres_admin_password: "{{ lookup('azure.azcollection.azure_keyvault_secret', 'pg-pass', vault_url=params.vault_url, client_id=params.client_id, secret=params.secret, tenant=params.tenant) }}"
-    db_name: "{{ lookup('azure.azcollection.azure_keyvault_secret', 'db-name', vault_url=params.vault_url, client_id=params.client_id, secret=params.secret, tenant=params.tenant) }}"
-    db_password: "{{ lookup('azure.azcollection.azure_keyvault_secret', 'db-password', vault_url=params.vault_url, client_id=params.client_id, secret=params.secret, tenant=params.tenant) }}"
-    db_host: "{{ lookup('azure.azcollection.azure_keyvault_secret', 'db-host', vault_url=params.vault_url, client_id=params.client_id, secret=params.secret, tenant=params.tenant) }}"
+        postgres_admin_user: "{{ lookup('azure.azcollection.azure_keyvault_secret', 'pgadmin', vault_url=params.vault_url, client_id=params.client_id, secret=params.secret, tenant=params.tenant) }}"
+        postgres_admin_password: "{{ lookup('azure.azcollection.azure_keyvault_secret', 'pg-pass', vault_url=params.vault_url, client_id=params.client_id, secret=params.secret, tenant=params.tenant) }}"
+        db_name: "{{ lookup('azure.azcollection.azure_keyvault_secret', 'db-name', vault_url=params.vault_url, client_id=params.client_id, secret=params.secret, tenant=params.tenant) }}"
+        db_password: "{{ lookup('azure.azcollection.azure_keyvault_secret', 'db-password', vault_url=params.vault_url, client_id=params.client_id, secret=params.secret, tenant=params.tenant) }}"
+        db_host: "{{ lookup('azure.azcollection.azure_keyvault_secret', 'db-host', vault_url=params.vault_url, client_id=params.client_id, secret=params.secret, tenant=params.tenant) }}"
 
   roles:
     - role: backend
