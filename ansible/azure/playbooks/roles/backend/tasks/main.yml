@@ -31,13 +31,17 @@
     update_cache: yes
   become: true
   
-- name: Install Azure SDK dependencies
+- name: Install Azure SDK and mgmt dependencies
   pip:
     name:
       - azure-identity
       - azure-core
       - msal
       - msal-extensions
+      - azure-mgmt-keyvault
+      - azure-mgmt-resource
+      - azure-mgmt-authorization
+      - msrestazure
     executable: pip3
   become: true
 
