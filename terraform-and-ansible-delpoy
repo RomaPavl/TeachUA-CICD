@@ -166,6 +166,8 @@ backend ansible_host=${env.BACKEND_IP} ansible_user=azureuser ansible_python_int
             -e "azure_client_id=$AZURE_CLIENT_ID azure_client_secret=$AZURE_CLIENT_SECRET azure_tenant_id=$AZURE_TENANT_ID"
     """
 }
+}
+}
         stage('Run Ansible Frontend Playbook') {
             steps {
                 withCredentials([
@@ -189,5 +191,5 @@ backend ansible_host=${env.BACKEND_IP} ansible_user=azureuser ansible_python_int
         }
     }
 }
-}
-}
+
+
