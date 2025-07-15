@@ -6,6 +6,10 @@ pipeline {
         INVENTORY_FILE = './ansible/inventory/hosts.ini'
         TFVARS_FILE = 'config.auto.tfvars.json'
         TFPLAN_JSON = './terraform/azure/tfplan.json'
+        DB_USER = credentials('jenkins-db-user')
+        DB_PASSWORD = credentials('jenkins-db-password')
+        PG_ADMIN_USER = credentials('jenkins-pgadmin-user')
+        PG_ADMIN_PASSWORD = credentials('jenkins-pgadmin-password')
     }
 
     stages {
@@ -125,6 +129,7 @@ pipeline {
                     env.FRONTEND_IP   = tfOutput.public_ips.value.frontend
                     env.BACKEND_IP    = tfOutput.public_ips.value.backend
                     env.BACKEND_PRIV  = tfOutput.private_ips.value.backend
+                    env.DB_HOST       = tfOutput.private_ips.value.backend
                 }
             }
         }
@@ -156,11 +161,14 @@ backend ansible_host=${env.BACKEND_IP} ansible_user=azureuser ansible_python_int
     string(credentialsId: 'tenant_id', variable: 'AZURE_TENANT_ID')
 ]) {
     sh """
-        . .venv/bin/activate
         ansible-playbook ansible/azure/playbooks/backend.yml \
         -i ansible/azure/inventory/hosts.ini \
         --private-key "$SSH_KEY" \
-        -e "azure_client_id=$AZURE_CLIENT_ID azure_client_secret=$AZURE_CLIENT_SECRET azure_tenant_id=$AZURE_TENANT_ID"
+        -e db_user=$DB_USER \
+        -e db_password=$DB_PASSWORD \
+        -e postgres_admin_user=$PG_ADMIN_USER \
+        -e postgres_admin_password=$PG_ADMIN_PASSWORD \
+        -e db_host=$DB_HOST
     """
 }
 }
@@ -179,7 +187,7 @@ backend ansible_host=${env.BACKEND_IP} ansible_user=azureuser ansible_python_int
                         script {
                             def backendHostPriv = env.BACKEND_PRIV
                             sh """
-                                 .venv/bin/ansible-playbook -i ansible/azure/inventory/hosts.ini ansible/azure/playbooks/frontend.yml --private-key "$SSH_KEY"
+                                 ansible-playbook -i ansible/azure/inventory/hosts.ini ansible/azure/playbooks/frontend.yml --private-key "$SSH_KEY"
                             """
                         }
                     }
