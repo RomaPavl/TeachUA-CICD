@@ -6,10 +6,10 @@ pipeline {
         INVENTORY_FILE = './ansible/inventory/hosts.ini'
         TFVARS_FILE = 'config.auto.tfvars.json'
         TFPLAN_JSON = './terraform/azure/tfplan.json'
-        DB_USER = credentials('jenkins-db-user')
-        DB_PASSWORD = credentials('jenkins-db-password')
-        PG_ADMIN_USER = credentials('jenkins-pgadmin-user')
-        PG_ADMIN_PASSWORD = credentials('jenkins-pgadmin-password')
+        DB_USER = credentials('datasource-user')
+        DB_PASSWORD = credentials('datasource-pass')
+        PG_ADMIN_USER = credentials('postgres_admin_user')
+        PG_ADMIN_PASSWORD = credentials('postgres_admin_password')
     }
 
     stages {
