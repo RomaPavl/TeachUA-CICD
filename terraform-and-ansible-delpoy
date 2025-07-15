@@ -145,65 +145,23 @@ backend ansible_host=${env.BACKEND_IP} ansible_user=azureuser ansible_python_int
                 }
             }
         }
-       stage('Extract secrets from Azure Key Vault') {
-    steps {
-        withCredentials([
-            string(credentialsId: 'clientId', variable: 'AZURE_CLIENT_ID'),
-            string(credentialsId: 'clientSecret', variable: 'AZURE_CLIENT_SECRET'),
-            string(credentialsId: 'tenant_id', variable: 'AZURE_TENANT_ID'),
-            string(credentialsId: 'subscription_id', variable: 'AZURE_SUBSCRIPTION_ID')
-        ]) {
-            withEnv([
-                "AZURE_CLIENT_ID=${AZURE_CLIENT_ID}",
-                "AZURE_CLIENT_SECRET=${AZURE_CLIENT_SECRET}",
-                "AZURE_TENANT_ID=${AZURE_TENANT_ID}",
-                "AZURE_SUBSCRIPTION_ID=${AZURE_SUBSCRIPTION_ID}"
-            ]) {
-                sh '''
-                    sudo apt-get update
-                    sudo apt-get install -y ca-certificates curl apt-transport-https lsb-release gnupg
-                    curl -sL https://packages.microsoft.com/keys/microsoft.asc | gpg --dearmor | tee /etc/apt/trusted.gpg.d/microsoft.gpg > /dev/null
-                    AZ_REPO=$(lsb_release -cs)
-                    echo "deb [arch=amd64] https://packages.microsoft.com/repos/azure-cli/ $AZ_REPO main" | tee /etc/apt/sources.list.d/azure-cli.list
-                    sudo apt-get update
-                    sudo apt-get install -y azure-cli
-                    az login --service-principal -u $AZURE_CLIENT_ID -p $AZURE_CLIENT_SECRET --tenant $AZURE_TENANT_ID
-                    echo "Retrieving secrets..."
-
-                    export PG_ADMIN_USER=$(az keyvault secret show --vault-name roma-kv-dev3 --name pgadmin --query value -o tsv)
-                    export PG_ADMIN_PASS=$(az keyvault secret show --vault-name roma-kv-dev3 --name pg-pass --query value -o tsv)
-                    export DB_NAME=$(az keyvault secret show --vault-name roma-kv-dev3 --name db-name --query value -o tsv)
-                    export DB_PASS=$(az keyvault secret show --vault-name roma-kv-dev3 --name db-password --query value -o tsv)
-                    export DB_HOST=$(az keyvault secret show --vault-name roma-kv-dev3 --name db-host --query value -o tsv)
-
-                    echo "PG_ADMIN_USER=$PG_ADMIN_USER" >> secrets.env
-                    echo "PG_ADMIN_PASS=$PG_ADMIN_PASS" >> secrets.env
-                    echo "DB_NAME=$DB_NAME" >> secrets.env
-                    echo "DB_PASS=$DB_PASS" >> secrets.env
-                    echo "DB_HOST=$DB_HOST" >> secrets.env
-                '''
-            }
-        }
-    }
-}
 
        stage('Run Ansible Backend Playbook') {
     steps {
         withCredentials([
-            sshUserPrivateKey(credentialsId: 'azure-ssh-key', keyFileVariable: 'SSH_KEY')
-        ]) {
-            sh '''
-                source secrets.env
-                ansible-playbook -i ansible/azure/inventory/hosts.ini ansible/azure/playbooks/backend.yml \
-                    --private-key "$SSH_KEY" \
-                    -e "postgres_admin_user=$PG_ADMIN_USER" \
-                    -e "postgres_admin_password=$PG_ADMIN_PASS" \
-                    -e "db_name=$DB_NAME" \
-                    -e "db_password=$DB_PASS" \
-                    -e "db_host=$DB_HOST"
-            '''
-        }
-    }
+    sshUserPrivateKey(credentialsId: 'azure-ssh-key', keyFileVariable: 'SSH_KEY'),
+    usernamePassword(credentialsId: 'docker-creds', usernameVariable: 'DOCKERHUB_USERNAME', passwordVariable: 'DOCKERHUB_PASSWORD'),
+    string(credentialsId: 'client-id', variable: 'AZURE_CLIENT_ID'),
+    string(credentialsId: 'client-secret', variable: 'AZURE_CLIENT_SECRET'),
+    string(credentialsId: 'tenant-id', variable: 'AZURE_TENANT_ID')
+]) {
+    sh """
+        . .venv/bin/activate
+        ansible-playbook ansible/azure/playbooks/backend.yml \
+            -i ansible/azure/inventory/hosts.ini \
+            --private-key "$SSH_KEY" \
+            -e "azure_client_id=$AZURE_CLIENT_ID azure_client_secret=$AZURE_CLIENT_SECRET azure_tenant_id=$AZURE_TENANT_ID"
+    """
 }
         stage('Run Ansible Frontend Playbook') {
             steps {
