@@ -13,7 +13,12 @@
       client_id: "{{ azure_client_id }}"
       secret: "{{ azure_client_secret }}"
       tenant: "{{ azure_tenant_id }}"
+    
   pre_tasks:
+    - name: Debug params
+      debug:
+        var: params
+        
     - name: Load secrets from Azure Key Vault
       set_fact:
         postgres_admin_user: "{{ lookup('azure.azcollection.azure_keyvault_secret', 'pgadmin', params) }}"
