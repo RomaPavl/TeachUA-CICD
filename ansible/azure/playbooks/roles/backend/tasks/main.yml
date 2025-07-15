@@ -31,6 +31,39 @@
     update_cache: yes
   become: true
   
+- name: Install Azure SDK dependencies
+  pip:
+    name:
+      - azure-identity
+      - azure-core
+      - msal
+      - msal-extensions
+    executable: pip3
+  become: true
+
+- name: Get secrets from Azure Key Vault
+  azure.azcollection.azure_rm_keyvaultsecret_info:
+    name: "{{ item }}"
+    vault_uri: "{{ vault_url }}"
+    client_id: "{{ client_id }}"
+    secret: "{{ secret }}"
+    tenant: "{{ tenant }}"
+  loop:
+    - pgadmin
+    - pg-pass
+    - db-name
+    - db-password
+    - db-host
+  register: secrets
+
+- name: Set all secrets
+  set_fact:
+    postgres_admin_user: "{{ secrets.results[0].value }}"
+    postgres_admin_password: "{{ secrets.results[1].value }}"
+    db_name: "{{ secrets.results[2].value }}"
+    db_password: "{{ secrets.results[3].value }}"
+    db_host: "{{ secrets.results[4].value }}"
+    
 - name: Create Docker network for service discovery
   community.docker.docker_network:
     name: "{{ network_name }}"
