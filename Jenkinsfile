@@ -87,7 +87,7 @@ pipeline {
                     echo export PRIVATE_KEY="%PRIVATE_KEY%" >> backend\\setenv.sh
                     echo export GOOGLE_MAP_KEY="%GOOGLE_MAP_KEY%" >> backend\\setenv.sh
                     echo export PROD_BASE_URI="%PROD_BASE_URI%" >> backend\\setenv.sh
-                    echo export DEV2_DATASOURCE_URL="%DEV2_DATASOURCE_URL%" >> backend\\setenv.sh
+                    echo export DEV2_DATASOURCE_URL="${DEV2_DATASOURCE_URL:-%DEV2_DATASOURCE_URL%}" >> backend\\setenv.sh
                     echo export DEV2_DATASOURCE_USER="%DEV2_DATASOURCE_USER%" >> backend\\setenv.sh
                     echo export DEV2_DATASOURCE_PASSWORD="%DEV2_DATASOURCE_PASSWORD%" >> backend\\setenv.sh
                     echo export PUBLIC_URL="%PUBLIC_URL%" >> backend\\setenv.sh
