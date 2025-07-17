@@ -21,9 +21,8 @@ RUN apt-get update && apt-get install -y dos2unix \
  && dos2unix /app/setenv.sh \
  && chmod +x /app/setenv.sh
 
-RUN . /app/setenv.sh
 # Expose application port
 EXPOSE 8080
 
 # Launch the Spring Boot application (embedded Tomcat)
-CMD ["sh","-c","exec java -jar /app/app.war"]
+CMD ["sh","-c",". /app/setenv.sh && exec java -jar /app/app.war"]
