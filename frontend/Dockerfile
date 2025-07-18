@@ -14,7 +14,7 @@ COPY public ./public
 
 # Install dependencies and build the application
 RUN npm cache clean --force
-RUN npm install --legacy-peer-deps
+RUN npm install 
 RUN npm install ajv
 RUN npm run build
 
