@@ -21,4 +21,4 @@ COPY --from=build /app/target/*.war app.war
 EXPOSE 8080
 
 # Launch the Spring Boot application (embedded Tomcat)
-CMD ["java -jar /app/app.war"]
+CMD ["java", "-jar", "/app/app.war"]
