@@ -1,6 +1,6 @@
 [
   {
-    "targets": {{ node_ips }},
+    "targets": {{ node_ips | to_json }},
     "labels": {
       "env": "dev",
       "job": "nodeexporter"
