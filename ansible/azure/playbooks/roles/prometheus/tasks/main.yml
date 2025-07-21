@@ -19,6 +19,31 @@
     group: root
     mode: '0777'
 
+- name: Generate nodeexported.json for NodeExporter
+  template:
+    src: templates/nodeexporter.json.j2
+    dest: /root/monitoring/targets/nodeexporter.json.j2
+    owner: root
+    group: root
+    mode: '0644'
+
+- name: Generate api.conf for Telegraf
+  template:
+    src: templates/app.conf.j2
+    dest: /root/monitoring/telegraf/telegraf.d/api.conf
+    owner: root
+    group: root
+    mode: '0644'
+
+- name: Generate postgresql.conf for Telegraf
+  template:
+    src: templates/postgresql.conf.j2
+    dest: /root/monitoring/telegraf/telegraf.d/postgresql.conf
+    owner: root
+    group: root
+    mode: '0644'
+
+
 - name: Add Docker GPG key
   apt_key:
     url: https://download.docker.com/linux/ubuntu/gpg

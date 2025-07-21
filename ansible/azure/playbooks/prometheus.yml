@@ -5,3 +5,15 @@
   become: true
   roles:
     - "prometheus"
+  vars:
+      node_ips:
+        - "{{ backend_pr_ip }}:9100"
+        - "{{ frontend_pr_ip }}:9100"
+
+      api_hosts:
+      - "http://{{ backend_ip }}:8080"
+      - "http://{{ frontend_ip }}:80"
+      
+      app_db_user: "{{ db_name }}"
+      app_db_password: "{{ db_password }}"
+      pg_db: "teachua"

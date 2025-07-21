@@ -1,0 +1,9 @@
+{% for url in api_hosts %}
+[[inputs.http_response]]
+  urls = ["{{ url }}"]
+  response_timeout = "15s"
+  method = "GET"
+  [inputs.http_response.tags]
+    env = "dev"
+
+{% endfor %}

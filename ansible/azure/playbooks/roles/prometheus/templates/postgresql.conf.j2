@@ -1,0 +1,5 @@
+[[inputs.postgresql]]
+  address = "host=roma-postgres-server-dev182.postgres.database.azure.com port=5432 user={{ app_db_user }} password={{ app_db_password }} dbname={{ pg_db }} sslmode=require application_name=telegraf"
+
+  [inputs.postgresql.tags]
+    env = "dev-main"
