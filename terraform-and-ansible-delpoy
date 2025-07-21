@@ -205,6 +205,7 @@ monitoring ansible_host=${env.MONITORING_IP} ansible_user=azureuser ansible_pyth
                 }
             }
         }
+
         stage('Run Ansible Playbook add agents') {
             steps {
                 withCredentials([
@@ -218,7 +219,7 @@ monitoring ansible_host=${env.MONITORING_IP} ansible_user=azureuser ansible_pyth
                 }
             }
         }
-       stage('Run Ansible Frontend Playbook') {
+       stage('Run Ansible Monitoring Playbook') {
             steps {
                 withCredentials([
                     sshUserPrivateKey(credentialsId: 'azure-ssh-key', keyFileVariable: 'SSH_KEY'),
