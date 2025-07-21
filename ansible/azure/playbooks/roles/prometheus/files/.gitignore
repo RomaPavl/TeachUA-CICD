@@ -1,0 +1,8 @@
+.idea/
+.DS_Store
+._.DS_Store
+**/.DS_Store
+**/._.DS_Store
+alertmanager/storage/*
+telegraf-crm/telegraf.d/prod/*
+.env

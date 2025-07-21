@@ -1,0 +1,10 @@
+- name: Deploy Filebeat on Linux
+  hosts: backend,frontend
+  gather_facts: true
+  become: true
+  roles:
+    - agents
+  tasks:
+    - name: Include Linux beats
+      ansible.builtin.include_tasks: ../roles/agents/tasks/linux.yml
+  tags: linux

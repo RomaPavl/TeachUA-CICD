@@ -1,0 +1,72 @@
+---
+- name: Create folders
+  ansible.builtin.file:
+    state: directory
+    owner: root 
+    group: root
+    mode: '0777'
+    path: "{{ item }}"
+  with_items:
+    - /root/monitoring
+    - /var/prometheus/data
+
+- name: Copy files to remote
+  ansible.builtin.copy:
+    src: "./files/"
+    dest: /root/monitoring/
+    backup: true
+    owner: root
+    group: root
+    mode: '0777'
+
+# - name: Add Docker GPG key
+#   apt_key:
+#     url: https://download.docker.com/linux/ubuntu/gpg
+#     state: present
+
+# - name: Add Docker repository
+#   apt_repository:
+#     repo: deb [arch=amd64] https://download.docker.com/linux/ubuntu {{ ansible_distribution_release | lower }} stable
+#     state: present
+#     filename: docker
+
+# - name: Install Docker Engine
+#   apt:
+#     name:
+#       - docker-ce
+#       - docker-ce-cli
+#       - containerd.io
+#     state: latest
+#     update_cache: yes
+
+# - name: Ensure Docker is running and enabled
+#   systemd:
+#     name: docker
+#     enabled: true
+#     state: started
+
+# - name: Install docker-compose
+#   become: true
+#   ansible.builtin.get_url:
+#         url: https://github.com/docker/compose/releases/download/1.29.2/docker-compose-Linux-x86_64
+#         dest: /usr/local/bin/docker-compose
+#         mode: '0755'
+        
+- name: Test prometheus config
+  become: True
+  ansible.builtin.shell:
+    cmd: "docker run -v $(pwd)/prometheus:/etc/prometheus/ --entrypoint=promtool prom/prometheus check config /etc/prometheus/prometheus.yml"
+    chdir: /root/monitoring
+
+- name: Run `docker compose pull`
+  become: True
+  shell:
+    cmd: "docker-compose pull"
+    chdir: /root/monitoring
+
+- name: Run docker compose up --force-recreate
+  become: True
+  shell:
+    cmd: "docker-compose up -d --force-recreate --no-deps telegraf"
+    chdir: /root/monitoring
+

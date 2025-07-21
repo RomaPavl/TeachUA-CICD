@@ -1,0 +1,35 @@
+---
+- name: Build web apps
+  when:
+    - "'prometheus' not in group_names"
+  block:
+    - name: Create folders. ENV - {{ env }}
+      become: true
+      ansible.builtin.file:
+        state: directory
+        path: "{{ item }}"
+      with_items:
+        - /root/monitoring
+    
+    - name: Deploy templates. ENV - {{ env }}
+      become: true
+      ansible.builtin.template:
+        src: "{{ item }}"
+        dest: /root/monitoring/{{ item | basename | regex_replace('\.j2$', '') }}
+        backup: true
+      with_fileglob:
+        - ../templates/linux/*.j2
+
+    - name: Install docker-compose
+      become: true
+      ansible.builtin.get_url:
+        url: https://github.com/docker/compose/releases/download/1.29.2/docker-compose-Linux-x86_64
+        dest: /usr/local/bin/docker-compose
+        mode: '0755'
+
+    - name: Run docker-compose up -d --force-recreate. ENV - {{ env }}
+      become: true
+      ansible.builtin.shell: |
+        docker-compose up -d --force-recreate
+      args:
+        chdir: /root/monitoring/

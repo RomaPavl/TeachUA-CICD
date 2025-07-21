@@ -21,18 +21,6 @@ variable "frontend_name" {
 variable "backend_name" {
   description = "Name of backend VM"
 }
-variable "subscription_id" {
-  type = string
-}
-variable "tenant_id" {
-  type = string
-}
-variable "client_id" {
-  type = string
-}
-variable "client_secret" {
-  type = string
-}
 variable "monitoring_name" {
   description = "Name of backend VM"
 }
@@ -148,7 +136,7 @@ locals {
       direction                  = "Inbound"
       access                     = "Allow"
       protocol                   = "Tcp"
-      source_address_prefix      = "45.12.26.127" # <- заміни на свій реальний публічний IP
+      source_address_prefix      = "*"
       source_port_range          = "*"
       destination_address_prefix = "*"
       destination_port_range     = "3000-3030"
@@ -159,10 +147,54 @@ locals {
       direction                  = "Inbound"
       access                     = "Allow"
       protocol                   = "Tcp"
-      source_address_prefix      = "45.12.26.127" # <- заміни на свій реальний публічний IP
+      source_address_prefix      = "*" 
       source_port_range          = "*"
       destination_address_prefix = "*"
       destination_port_range     = "9090"
+    },
+    {
+      name                       = "AllowNodeExporterFromFrontend"
+      priority                   = 130
+      direction                  = "Inbound"
+      access                     = "Allow"
+      protocol                   = "Tcp"
+      source_address_prefix      = module.vm.private_ips["frontend"]
+      source_port_range          = "*"
+      destination_address_prefix = module.vm.private_ips["monitoring"]
+      destination_port_range     = "9100"
+    },
+    {
+      name                       = "AllowNodeExporterFromBackend"
+      priority                   = 131
+      direction                  = "Inbound"
+      access                     = "Allow"
+      protocol                   = "Tcp"
+      source_address_prefix      = module.vm.private_ips["backend"]
+      source_port_range          = "*"
+      destination_address_prefix = module.vm.private_ips["monitoring"]
+      destination_port_range     = "9100"
+    },
+    {
+      name                       = "AllowTelegrafFromFrontend"
+      priority                   = 132
+      direction                  = "Inbound"
+      access                     = "Allow"
+      protocol                   = "Tcp"
+      source_address_prefix      = module.vm.private_ips["frontend"]
+      source_port_range          = "*"
+      destination_address_prefix = module.vm.private_ips["monitoring"]
+      destination_port_range     = "9126"
+    },
+    {
+      name                       = "AllowTelegrafFromBackend"
+      priority                   = 133
+      direction                  = "Inbound"
+      access                     = "Allow"
+      protocol                   = "Tcp"
+      source_address_prefix      = module.vm.private_ips["backend"]
+      source_port_range          = "*"
+      destination_address_prefix = module.vm.private_ips["monitoring"]
+      destination_port_range     = "9126"
     }
   ]
   all_rules = concat(var.security_rules, local.additional_rules)
