@@ -237,7 +237,6 @@ monitoring ansible_host=${env.MONITORING_IP} ansible_user=azureuser ansible_pyth
                                 -e "frontend_pr_ip=${FRONTEND_PRIV}" \
                                 -e "backend_ip=${BACKEND_IP}" \
                                 -e "frontend_ip=${FRONTEND_IP}" \
-                                -e "frontend_ip=${FRONTEND_IP}" \
                                 -e db_user=$DB_USER \
                                 -e db_password=$DB_PASSWORD 
                             """
