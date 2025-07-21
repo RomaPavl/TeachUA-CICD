@@ -6,5 +6,5 @@
     - agents
   tasks:
     - name: Include Linux beats
-      ansible.builtin.include_tasks: ../roles/agents/tasks/linux.yml
+      ansible.builtin.include_tasks: ./roles/agents/tasks/linux.yml
   tags: linux
