@@ -22,7 +22,7 @@
 - name: Generate nodeexported.json for NodeExporter
   template:
     src: templates/nodeexporter.json.j2
-    dest: /root/monitoring/targets/nodeexporter.json.j2
+    dest: /root/monitoring/targets/nodeexporter.json
     owner: root
     group: root
     mode: '0644'
