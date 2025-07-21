@@ -141,6 +141,9 @@ pipeline {
                 withCredentials([sshUserPrivateKey(credentialsId: 'azure-ssh-key', keyFileVariable: 'SSH_KEY_PATH')]) {
                     script {
                         def inventoryContent = """
+[all:vars]
+env=dev
+
 [frontend]
 frontend ansible_host=${env.FRONTEND_IP} ansible_user=azureuser ansible_python_interpreter=/usr/bin/python3 ansible_ssh_common_args='-o StrictHostKeyChecking=no'
 
